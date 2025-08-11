@@ -2,33 +2,92 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pernod Mini App</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pernod Ricard — Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    html,body{margin:0;padding:0;font-family:system-ui,Arial}
-    .wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#f6f6f9}
-    h1{margin:0;font-size:24px}
-    .card{background:#fff;padding:20px 24px;border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,.08);text-align:center}
-    button{padding:12px 18px;border:0;border-radius:10px;font-size:16px;cursor:pointer;background:#0088cc;color:#fff}
+    :root{
+      --bg:#f6f6f9; --card:#ffffff; --text:#111; --muted:#666; --accent:#0a84ff;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    body{background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+    .wrap{width:100%;max-width:520px}
+    .brand{
+      display:flex;align-items:center;gap:10px;margin:0 auto 16px auto;justify-content:center;opacity:.9;
+    }
+    .brand .logo{width:36px;height:36px;border-radius:10px;background:var(--accent);filter:saturate(.85);box-shadow:0 6px 16px rgba(0,0,0,.12)}
+    .brand .name{font-weight:700;letter-spacing:.4px;color:var(--text)}
+    .card{
+      background:var(--card);
+      border-radius:20px;
+      box-shadow:0 12px 36px rgba(0,0,0,.10);
+      padding:28px 22px;
+      text-align:center;
+    }
+    .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+    h1{margin:0 0 8px;font-size:24px;color:var(--text)}
+    .sub{margin:0 auto 18px;max-width:34ch;line-height:1.45;color:var(--muted)}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;background:#00000008;color:var(--muted);font-size:13px;margin-bottom:14px;
+    }
+    .btn{
+      width:100%;padding:14px 16px;border:0;border-radius:14px;
+      background:var(--accent);color:#fff;font-weight:600;font-size:16px;cursor:pointer;
+      box-shadow:0 10px 20px rgba(10,132,255,.25);transition:transform .06s ease;
+    }
+    .btn:active{transform:translateY(1px)}
+    .footer{margin-top:14px;font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
   <div class="wrap">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div class="name">Pernod Ricard</div>
+    </div>
+
     <div class="card">
-      <h1 id="hello">Загрузка…</h1>
-      <p>Это тест Telegram Mini App. Работает внутри Telegram.</p>
-      <button onclick="Telegram.WebApp.close()">Закрыть</button>
+      <p class="eyebrow">Добро пожаловать</p>
+      <h1 id="title">Привет, гость!</h1>
+      <p class="sub">Это мини-приложение для интерактивов конференции: квизы, голосования, аукцион призов.</p>
+
+      <div class="pill" id="sessionHint">Инициализация…</div>
+
+      <button class="btn" id="startBtn">Начать</button>
+      <div class="footer">Работает внутри Telegram Mini App</div>
     </div>
   </div>
 
   <script>
     const tg = window.Telegram.WebApp;
-    tg.expand(); // на весь экран
+    tg.expand();
 
-    const user = tg.initDataUnsafe?.user;
-    document.getElementById('hello').textContent =
-      user ? `Привет, ${user.first_name}!` : 'Привет, гость!';
+    // применяем цвета темы Telegram
+    const tp = tg.themeParams || {};
+    const pick = (k, fb) => (tp[k] ? (tp[k].startsWith('#') ? tp[k] : '#'+tp[k]) : fb);
+    document.documentElement.style.setProperty('--bg',     pick('bg_color',       getComputedStyle(document.documentElement).getPropertyValue('--bg')));
+    document.documentElement.style.setProperty('--card',   pick('secondary_bg_color', '#ffffff'));
+    document.documentElement.style.setProperty('--text',   pick('text_color',     '#111111'));
+    document.documentElement.style.setProperty('--muted',  pick('hint_color',     '#666666'));
+    document.documentElement.style.setProperty('--accent', pick('button_color',   '#0a84ff'));
+
+    // приветствие
+    const u = tg.initDataUnsafe?.user;
+    document.getElementById('title').textContent = u ? `Привет, ${u.first_name}!` : 'Привет, гость!';
+
+    // подсказка статуса
+    const hint = document.getElementById('sessionHint');
+    hint.textContent = u ? `ID ${u.id} • готово` : 'Гость • ограниченный режим';
+
+    // кнопка "Начать"
+    const startBtn = document.getElementById('startBtn');
+    startBtn.addEventListener('click', () => {
+      try { tg.HapticFeedback?.impactOccurred('medium'); } catch(e){}
+      tg.showAlert('Это заглушка. Дальше будет: выбор игры → регистрация раунда → начисление баллов.');
+      // здесь позже: router.navigate('/quiz') или загрузка следующего экрана
+    });
   </script>
 </body>
 </html>
