@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8">
+<title>Admin</title>
+<style>body{font-family:system-ui;padding:20px}</style>
+<h1>Admin</h1>
+<div id="box">Загрузка…</div>
+<script>
+async function load(){
+  const res = await fetch('/api/stats');
+  const s = await res.json();
+  document.getElementById('box').innerHTML =
+    `Онлайн: <b>${s.online}</b><br>Всего: <b>${s.total}</b><br><br>` +
+    `<ol>` + s.leaderboard.map(r=>`<li>${r.display_name || 'Без имени'} — ${r.score}</li>`).join('') + `</ol>`;
+}
+load(); setInterval(load, 2000);
+</script>
