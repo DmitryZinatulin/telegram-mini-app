@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Pernod Ricard — Mini App</title>
+  <meta name="theme-color" content="#0a84ff" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root{
@@ -61,33 +62,66 @@
   </div>
 
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    // === Инициализация Telegram WebApp и тема ===
+    const tg = window.Telegram?.WebApp;
+    tg?.expand();
 
-    // применяем цвета темы Telegram
-    const tp = tg.themeParams || {};
+    const tp = (tg && tg.themeParams) || {};
     const pick = (k, fb) => (tp[k] ? (tp[k].startsWith('#') ? tp[k] : '#'+tp[k]) : fb);
+
     document.documentElement.style.setProperty('--bg',     pick('bg_color',       getComputedStyle(document.documentElement).getPropertyValue('--bg')));
     document.documentElement.style.setProperty('--card',   pick('secondary_bg_color', '#ffffff'));
     document.documentElement.style.setProperty('--text',   pick('text_color',     '#111111'));
     document.documentElement.style.setProperty('--muted',  pick('hint_color',     '#666666'));
     document.documentElement.style.setProperty('--accent', pick('button_color',   '#0a84ff'));
 
-    // приветствие
-    const u = tg.initDataUnsafe?.user;
-    document.getElementById('title').textContent = u ? `Привет, ${u.first_name}!` : 'Привет, гость!';
+    // === Приветствие и статус ===
+    const user = tg?.initDataUnsafe?.user;
+    const titleEl = document.getElementById('title');
+    const hintEl  = document.getElementById('sessionHint');
 
-    // подсказка статуса
-    const hint = document.getElementById('sessionHint');
-    hint.textContent = u ? `ID ${u.id} • готово` : 'Гость • ограниченный режим';
+    if (user) {
+      titleEl.textContent = `Привет, ${user.first_name}!`;
+      hintEl.textContent  = `ID ${user.id} • готово`;
+    } else {
+      titleEl.textContent = 'Привет, гость!';
+      hintEl.textContent  = 'Открой через Telegram для полного функционала';
+    }
 
-    // кнопка "Начать"
-    const startBtn = document.getElementById('startBtn');
-    startBtn.addEventListener('click', () => {
-      try { tg.HapticFeedback?.impactOccurred('medium'); } catch(e){}
-      tg.showAlert('Это заглушка. Дальше будет: выбор игры → регистрация раунда → начисление баллов.');
-      // здесь позже: router.navigate('/quiz') или загрузка следующего экрана
+    // === Кнопка "Начать" ===
+    document.getElementById('startBtn').addEventListener('click', () => {
+      try { tg?.HapticFeedback?.impactOccurred('medium'); } catch(e){}
+      tg?.showAlert?.('Это заглушка. Дальше будет: выбор игры → регистрация раунда → начисление баллов.');
+      // TODO: тут позже роут на следующий экран
     });
+
+    // === Вспомогательный вызов API ===
+    async function call(path, data){
+      try {
+        await fetch(`/api/${path}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data || {})
+        });
+      } catch (e) {
+        console.log('API error:', e);
+      }
+    }
+
+    // === Регистрация + пинг онлайна (только внутри Telegram) ===
+    if (user) {
+      call('register', {
+        tg_id: user.id,
+        username: user.username,
+        display_name: user.first_name
+      });
+
+      setInterval(() => {
+        call('ping', { tg_id: user.id });
+      }, 10000);
+    } else {
+      console.log('Запущено вне Telegram: register/ping не выполняются');
+    }
   </script>
 </body>
 </html>
