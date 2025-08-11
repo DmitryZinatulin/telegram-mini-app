@@ -1,7 +1,5 @@
 {
   "name": "telegram-mini-app",
   "type": "module",
-  "dependencies": {
-    "pg": "^8.11.5"
-  }
+  "dependencies": { "pg": "^8.11.5" }
 }

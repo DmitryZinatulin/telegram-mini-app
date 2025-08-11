@@ -6,12 +6,7 @@ export default async function handler(req, res) {
 
   const body = await readBody(req);
   const { tg_id, username, display_name } = body || {};
-
-  if (!tg_id) {
-    // подсказка в логах, удобно дебажить в Vercel → Functions → Logs
-    console.error("register: tg_id missing, body=", body);
-    return res.status(400).json({ error: "tg_id required" });
-  }
+  if (!tg_id) return res.status(400).json({ error: "tg_id required" });
 
   try {
     await pool.query(
@@ -23,9 +18,9 @@ export default async function handler(req, res) {
              last_seen=now()`,
       [tg_id, username || null, display_name || null]
     );
-    return res.json({ ok: true });
+    res.json({ ok: true });
   } catch (e) {
     console.error("register error:", e);
-    return res.status(500).json({ error: "db_failed" });
+    res.status(500).json({ error: "db_failed" });
   }
 }

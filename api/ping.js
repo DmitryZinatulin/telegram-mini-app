@@ -6,11 +6,7 @@ export default async function handler(req, res) {
 
   const body = await readBody(req);
   const { tg_id } = body || {};
-
-  if (!tg_id) {
-    console.error("ping: tg_id missing, body=", body);
-    return res.status(400).json({ error: "tg_id required" });
-  }
+  if (!tg_id) return res.status(400).json({ error: "tg_id required" });
 
   try {
     await pool.query(`update users set last_seen=now() where tg_id=$1`, [tg_id]);
@@ -31,10 +27,9 @@ export default async function handler(req, res) {
         [uid]
       );
     }
-
-    return res.json({ ok: true });
+    res.json({ ok: true });
   } catch (e) {
     console.error("ping error:", e);
-    return res.status(500).json({ error: "db_failed" });
+    res.status(500).json({ error: "db_failed" });
   }
 }
