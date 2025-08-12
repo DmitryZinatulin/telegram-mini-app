@@ -1,437 +1,959 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <title>Admin • Pernod Ricard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root{
-      --bg:#0b1020; --card:#121a2a; --text:#e9eefc; --muted:#96a0b8;
-      --accent:#4c8dff; --ok:#39d98a; --err:#ff6b6b; --line:#1e2840;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    .wrap{max-width:1180px;margin:24px auto;padding:0 16px}
-    h1{font-size:20px;margin:0 0 16px}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .kv{display:grid;grid-template-columns:140px 1fr;gap:8px;align-items:center;width:100%}
-    input[type="text"],select,textarea{background:#0b1323;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:10px;outline:none;width:100%}
-    textarea{min-height:80px}
-    .btn{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
-    .btn.secondary{background:#24365d}
-    .btn.ghost{background:transparent;border:1px solid var(--line)}
-    .muted{color:var(--muted)}
-    .mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:16px}
-    .status-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#7381a3;margin-right:6px}
-    .status-ok{background:var(--ok)} .status-err{background:var(--err)}
-    .tabs{display:flex;gap:8px;margin-bottom:12px}
-    .tab{padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:#0b1323;cursor:pointer}
-    .tab.active{background:var(--accent)}
-    .col2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .cols2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    hr{border:0;border-top:1px solid var(--line);margin:12px 0}
-    .list{border:1px solid var(--line);border-radius:10px;overflow:hidden}
-    .item{display:flex;align-items:center;justify-content:space-between;padding:10px;border-bottom:1px solid var(--line)}
-    .item:last-child{border-bottom:0}
-    .pill{display:inline-flex;align-items:center;gap:8px;background:#0b1323;border:1px solid var(--line);border-radius:999px;padding:6px 10px}
-    .led{display:inline-flex;align-items:center;gap:6px;margin-right:10px}
-    .led .dot{width:10px;height:10px;border-radius:50%;background:#7381a3}
-    .led.ok .dot{background:var(--ok)} .led.err .dot{background:var(--err)}
-  </style>
-</head>
-<body>
-<div class="wrap">
-  <h1>Админка события</h1>
+  <head>
+    <meta charset="utf-8" />
+    <title>Admin • Pernod Ricard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --bg: #0b1020;
+        --card: #121a2a;
+        --text: #e9eefc;
+        --muted: #96a0b8;
+        --accent: #4c8dff;
+        --ok: #39d98a;
+        --err: #ff6b6b;
+        --line: #1e2840;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 16px;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .kv {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+      }
+      input[type="text"],
+      select,
+      textarea {
+        background: #0b1323;
+        border: 1px solid var(--line);
+        color: var(--text);
+        padding: 8px 10px;
+        border-radius: 10px;
+        outline: none;
+        width: 100%;
+      }
+      textarea {
+        min-height: 80px;
+      }
+      .btn {
+        background: var(--accent);
+        color: #fff;
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn.secondary {
+        background: #24365d;
+      }
+      .btn.ghost {
+        background: transparent;
+        border: 1px solid var(--line);
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .mt8 {
+        margin-top: 8px;
+      }
+      .mt12 {
+        margin-top: 12px;
+      }
+      .mt16 {
+        margin-top: 16px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        padding: 16px;
+      }
+      .status-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #7381a3;
+        margin-right: 6px;
+      }
+      .status-ok {
+        background: var(--ok);
+      }
+      .status-err {
+        background: var(--err);
+      }
+      .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .tab {
+        padding: 10px 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #0b1323;
+        cursor: pointer;
+      }
+      .tab.active {
+        background: var(--accent);
+      }
+      .col2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .cols2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      hr {
+        border: 0;
+        border-top: 1px solid var(--line);
+        margin: 12px 0;
+      }
+      .list {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      .item:last-child {
+        border-bottom: 0;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #0b1323;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 10px;
+      }
+      .led {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-right: 10px;
+      }
+      .led .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #7381a3;
+      }
+      .led.ok .dot {
+        background: var(--ok);
+      }
+      .led.err .dot {
+        background: var(--err);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Админка события</h1>
 
-  <!-- slug + token -->
-  <div class="row kv" style="margin-bottom:12px">
-    <div class="muted">Event slug</div>
-    <input id="slug" type="text" />
-    <div class="muted">Admin token</div>
-    <input id="token" type="text" placeholder="вставь ADMIN_TOKEN" />
-  </div>
-
-  <!-- tabs -->
-  <div class="tabs">
-    <div class="tab" data-tab="dash">Статус</div>
-    <div class="tab" data-tab="conf">Конференция</div>
-    <div class="tab" data-tab="quiz">Интерактивы</div>
-    <div class="tab" data-tab="board">Лидерборд</div>
-  </div>
-
-  <!-- ====== Статус ====== -->
-  <section id="dash" class="card" style="display:none">
-    <div class="row">
-      <span id="sdot" class="status-dot"></span><strong>Статус</strong>
-      <span id="supdated" class="pill">—</span>
-    </div>
-
-    <div class="col2 mt12">
-      <div class="card">
-        <strong>Онлайн</strong>
-        <div class="mt8">Сейчас онлайн: <b id="d_online">0</b></div>
-        <div>Всего зарегистрировано: <b id="d_total">0</b></div>
-        <div class="row mt12">
-          <button class="btn secondary" id="d_refresh">Обновить</button>
-          <label class="row"><input type="checkbox" id="d_auto" checked style="transform:scale(1.2);margin-right:6px"> авто</label>
-        </div>
+      <!-- slug + token -->
+      <div class="row kv" style="margin-bottom: 12px">
+        <div class="muted">Event slug</div>
+        <input id="slug" type="text" />
+        <div class="muted">Admin token</div>
+        <input id="token" type="text" placeholder="вставь ADMIN_TOKEN" />
       </div>
-      <div class="card">
-        <strong>Топ-10</strong>
-        <div class="list mt8" id="d_top"></div>
+
+      <!-- tabs -->
+      <div class="tabs">
+        <div class="tab" data-tab="dash">Статус</div>
+        <div class="tab" data-tab="conf">Конференция</div>
+        <div class="tab" data-tab="quiz">Интерактивы</div>
+        <div class="tab" data-tab="board">Лидерборд</div>
+        <div class="tab" data-tab="people">Участники</div>
       </div>
-    </div>
-  </section>
 
-  <!-- ====== Конференция ====== -->
-  <section id="conf" class="card" style="display:none">
-    <!-- read-only блок -->
-    <div class="card">
-      <div class="row">
-        <span id="c_dot" class="status-dot"></span><strong>Текущий статус</strong>
-        <span id="c_updated" class="pill">—</span>
-      </div>
-      <div class="mt12"><b>Фаза:</b> <span id="c_phase">—</span></div>
-      <div class="row mt8" id="c_flags">
-        <span class="led" id="led_quiz"><span class="dot"></span>Квиз</span>
-        <span class="led" id="led_logic"><span class="dot"></span>Где логика?</span>
-        <span class="led" id="led_contact"><span class="dot"></span>Есть контакт!</span>
-        <span class="led" id="led_100"><span class="dot"></span>100 к 1</span>
-        <span class="led" id="led_auction"><span class="dot"></span>Аукцион</span>
-      </div>
-    </div>
-
-    <hr/>
-
-    <!-- Форма управления -->
-    <strong>Управление</strong>
-    <div class="mt12 kv">
-      <div class="muted">Фаза</div>
-      <select id="phase">
-        <option value="lobby">lobby</option>
-        <option value="quiz">quiz</option>
-        <option value="logic">logic</option>
-        <option value="contact">contact</option>
-        <option value="onehundred">onehundred</option>
-        <option value="auction">auction</option>
-      </select>
-    </div>
-    <div class="mt12 cols2">
-      <label><input id="f_quiz" type="checkbox"> Квиз</label>
-      <label><input id="f_logic" type="checkbox"> Где логика?</label>
-      <label><input id="f_contact" type="checkbox"> Есть контакт!</label>
-      <label><input id="f_100" type="checkbox"> 100 к 1</label>
-      <label><input id="f_auction" type="checkbox"> Аукцион</label>
-    </div>
-    <div class="row mt12">
-      <button class="btn ghost" id="btnLoadState">Загрузить</button>
-      <button class="btn" id="btnSaveState">Сохранить</button>
-      <span id="saveInfo" class="muted">—</span>
-      <button class="btn secondary" id="btnOpenHall" style="margin-left:auto">Открыть экран зала</button>
-    </div>
-  </section>
-
-  <!-- ====== Интерактивы ====== -->
-  <section id="quiz" class="card" style="display:none">
-    <div class="row">
-      <strong>Квиз — раунды и вопросы</strong>
-      <span id="qInfo" class="muted" style="margin-left:8px">—</span>
-    </div>
-
-    <div class="col2 mt12">
-      <!-- Rounds -->
-      <div class="card">
+      <!-- ====== Статус ====== -->
+      <section id="dash" class="card" style="display: none">
         <div class="row">
-          <input id="qRoundTitle" type="text" placeholder="Название раунда"/>
-          <button class="btn" id="qRoundSave">Сохранить</button>
-          <button class="btn secondary" id="qRoundOpen">Открыть</button>
-          <button class="btn ghost" id="qRoundClose">Закрыть</button>
+          <span id="sdot" class="status-dot"></span><strong>Статус</strong>
+          <span id="supdated" class="pill">—</span>
         </div>
-        <div class="list mt12" id="qRounds"></div>
-      </div>
 
-      <!-- Questions -->
-      <div class="card">
-        <div class="muted">Выбранный раунд: <b id="qCurrent">—</b></div>
-        <div class="mt8">Текст вопроса</div>
-        <textarea id="qText"></textarea>
-        <div class="mt8 cols2">
-          <input id="o1" type="text" placeholder="Вариант 1"/>
-          <input id="o2" type="text" placeholder="Вариант 2"/>
-          <input id="o3" type="text" placeholder="Вариант 3"/>
-          <input id="o4" type="text" placeholder="Вариант 4"/>
+        <div class="col2 mt12">
+          <div class="card">
+            <strong>Онлайн</strong>
+            <div class="mt8">Сейчас онлайн: <b id="d_online">0</b></div>
+            <div>Всего зарегистрировано: <b id="d_total">0</b></div>
+            <div class="row mt12">
+              <button class="btn secondary" id="d_refresh">Обновить</button>
+              <label class="row"
+                ><input
+                  type="checkbox"
+                  id="d_auto"
+                  checked
+                  style="transform: scale(1.2); margin-right: 6px"
+                />
+                авто</label
+              >
+            </div>
+          </div>
+          <div class="card">
+            <strong>Топ-10</strong>
+            <div class="list mt8" id="d_top"></div>
+          </div>
         </div>
-        <div class="mt8 kv">
-          <div class="muted">Правильный индекс</div>
-          <input id="qCorrect" type="text" placeholder="0..3"/>
-        </div>
-        <div class="row mt8">
-          <button class="btn" id="qAdd">Добавить вопрос</button>
-          <button class="btn secondary" id="qUpdate">Обновить выбранный</button>
-          <button class="btn ghost" id="qDelete">Удалить выбранный</button>
-          <span id="qMsg" class="muted">—</span>
-        </div>
-        <div class="list mt12" id="qList"></div>
+      </section>
 
-        <hr/>
-        <div class="row">
-          <button class="btn" id="qStart">Старт раунда</button>
-          <button class="btn secondary" id="qNext">Следующий вопрос</button>
-          <button class="btn secondary" id="qReveal">Начислить (+10)</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ====== Лидерборд ====== -->
-  <section id="board" class="card" style="display:none">
-    <strong>Лидерборд (превью)</strong>
-    <div class="row mt12">
-      <button class="btn secondary" id="bOpen">Открыть экран зала</button>
-      <button class="btn ghost" id="bReload">Обновить</button>
-    </div>
-    <div class="list mt12" id="bList"></div>
-  </section>
-</div>
-
-<script>
-  // ===== helpers =====
-  const $ = s => document.querySelector(s);
-  const EVENT = () => $("#slug").value || "pr-demo";
-  const TOKEN = () => $("#token").value || "";
-
-  // persist slug/token
-  (function bootstrapPersist(){
-    const s = localStorage.getItem("adm_event_slug");
-    const t = localStorage.getItem("adm_admin_token");
-    if (s) $("#slug").value = s; else $("#slug").value = "pr-demo";
-    if (t) $("#token").value = t;
-    $("#slug").addEventListener("input", e=>localStorage.setItem("adm_event_slug", e.target.value));
-    $("#token").addEventListener("input", e=>localStorage.setItem("adm_admin_token", e.target.value));
-  })();
-
-  // tabs
-  const tabs = [...document.querySelectorAll(".tab")];
-  function showTab(name){
-    tabs.forEach(t => t.classList.toggle("active", t.dataset.tab===name));
-    document.querySelectorAll("section").forEach(s => s.style.display = (s.id===name ? "block" : "none"));
-    localStorage.setItem("adm_tab", name);
-  }
-  tabs.forEach(t => t.onclick = ()=> showTab(t.dataset.tab));
-  showTab(localStorage.getItem("adm_tab") || "dash");
-
-async function getJSON(path, headers = {}) {
-  const r = await fetch(path, { headers });
-  if (!r.ok) throw new Error(path + " " + r.status);
-  return r.json();
-}
-async function postJSON(path, body, headers = {}) {
-  const r = await fetch(path, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...headers },
-    body: JSON.stringify(body || {}),
-  });
-  if (!r.ok) throw new Error(path + " " + r.status);
-  return r.json();
-}
-
-  // ===== Статус =====
-  async function dashLoad(){
-    // текущее состояние
-    try{
-      const s = await getJSON(`/api/event/state.js?event_slug=${encodeURIComponent(EVENT())}`);
-      $("#supdated").textContent = "updated_at: " + (s.state?.updated_at || "—");
-      $("#sdot").classList.add("status-ok"); $("#sdot").classList.remove("status-err");
-    }catch{
-      $("#sdot").classList.remove("status-ok"); $("#sdot").classList.add("status-err");
-    }
-    // статистика
-    const st = await getJSON(`/api/event/stats.js?event_slug=${encodeURIComponent(EVENT())}`);
-    $("#d_online").textContent = st.online;
-    $("#d_total").textContent = st.total_registered;
-    $("#d_top").innerHTML =
-      (st.top||[]).map((r,i)=>`<div class="item"><div>#${i+1} — ${r.display_name||'Без имени'}</div><div>${r.score}</div></div>`).join('')
-      || `<div class="item">Пусто</div>`;
-  }
-  $("#d_refresh").onclick = dashLoad;
-  let dashTimer = setInterval(()=> $("#d_auto").checked && dashLoad(), 3000);
-  $("#d_auto").onchange = ()=> { if(!$("#d_auto").checked) clearInterval(dashTimer); else dashTimer = setInterval(()=> $("#d_auto").checked && dashLoad(), 3000); };
-  dashLoad();
-
-  // ===== Конференция =====
-  async function confRefreshReadonly(){
-    try{
-      const d = await getJSON(`/api/event/state.js?event_slug=${encodeURIComponent(EVENT())}`);
-      const st = d.state || {};
-      $("#c_phase").textContent = st.phase || "—";
-      $("#c_updated").textContent = "updated_at: " + (st.updated_at || "—");
-      const set = (id, ok)=> { const el = $(id); el.classList.toggle("ok", ok); el.classList.toggle("err", !ok); };
-      set("#led_quiz", !!st.quiz_open);
-      set("#led_logic", !!st.logic_open);
-      set("#led_contact", !!st.contact_open);
-      set("#led_100", !!st.onehundred_open);
-      set("#led_auction", !!st.auction_open);
-      $("#c_dot").classList.add("status-ok"); $("#c_dot").classList.remove("status-err");
-    }catch{
-      $("#c_dot").classList.remove("status-ok"); $("#c_dot").classList.add("status-err");
-    }
-  }
-  setInterval(confRefreshReadonly, 3000);
-  confRefreshReadonly();
-
-  $("#btnOpenHall").onclick = ()=> window.open(`/hall.html?event=${encodeURIComponent(EVENT())}`, "_blank");
-
-  $("#btnLoadState").onclick = async ()=>{
-    const d = await getJSON(`/api/event/state.js?event_slug=${encodeURIComponent(EVENT())}`);
-    const st = d.state || {};
-    $("#phase").value = st.phase || "lobby";
-    $("#f_quiz").checked = !!st.quiz_open;
-    $("#f_logic").checked = !!st.logic_open;
-    $("#f_contact").checked = !!st.contact_open;
-    $("#f_100").checked = !!st.onehundred_open;
-    $("#f_auction").checked = !!st.auction_open;
-    $("#saveInfo").textContent = "Загружено";
-  };
-  $("#btnSaveState").onclick = async ()=>{
-    const patch = {
-      phase: $("#phase").value,
-      quiz_open: $("#f_quiz").checked,
-      logic_open: $("#f_logic").checked,
-      contact_open: $("#f_contact").checked,
-      onehundred_open: $("#f_100").checked,
-      auction_open: $("#f_auction").checked,
-    };
-    try{
-      await postJSON(`/api/admin/state_set.js?event_slug=${encodeURIComponent(EVENT())}`, patch, { "x-admin-token": TOKEN() });
-      $("#saveInfo").textContent = "Сохранено ✓";
-      confRefreshReadonly();
-    }catch{
-      $("#saveInfo").textContent = "Ошибка";
-    }
-  };
-
-  // ===== Интерактивы (квиз) =====
-  const LSK = "adm_quiz_draft_v1";
-  const draft = {
-    round_id: localStorage.getItem(LSK+"_round") || "",
-    title:     localStorage.getItem(LSK+"_title") || "",
-    qText:     localStorage.getItem(LSK+"_qText") || "",
-    o1:        localStorage.getItem(LSK+"_o1") || "",
-    o2:        localStorage.getItem(LSK+"_o2") || "",
-    o3:        localStorage.getItem(LSK+"_o3") || "",
-    o4:        localStorage.getItem(LSK+"_o4") || "",
-    qCorrect:  localStorage.getItem(LSK+"_qCorrect") || "",
-  };
-  $("#qRoundTitle").value = draft.title; $("#qText").value = draft.qText;
-  ["o1","o2","o3","o4"].forEach(id=> $("#"+id).value = draft[id]);
-  $("#qCorrect").value = draft.qCorrect; $("#qCurrent").textContent = draft.round_id || "—";
-  ["qRoundTitle","qText","o1","o2","o3","o4","qCorrect"].forEach(id=>{
-    $("#"+id).addEventListener("input", e=> localStorage.setItem(LSK+"_"+id.replace(/^q/,"q").replace(/^o/,"o"), e.target.value));
-  });
-
-  async function loadRounds(){
-    const j = await getJSON(`/api/quiz.js?action=admin_rounds&event_slug=${encodeURIComponent(EVENT())}`);
-    $("#qRounds").innerHTML =
-      (j.rounds||[]).map(r=>`
-        <div class="item">
-          <div>#${r.id} — ${r.title} ${r.is_open ? '<span class="pill">open</span>' : ''}</div>
-          <div class="row"><button class="btn secondary" onclick="pickRound(${r.id}, '${encodeURIComponent(r.title)}')">Выбрать</button></div>
-        </div>`
-      ).join('') || `<div class="item">Пока нет раундов</div>`;
-  }
-  window.pickRound = async (id, encTitle)=>{
-    draft.round_id = id; localStorage.setItem(LSK+"_round", id);
-    const t = decodeURIComponent(encTitle);
-    $("#qCurrent").textContent = id; $("#qRoundTitle").value = t; localStorage.setItem(LSK+"_title", t);
-    loadQuestions();
-  };
-
-  async function loadQuestions(){
-    $("#qList").innerHTML = "Загрузка...";
-    if(!draft.round_id) return ($("#qList").innerHTML = "Выбери раунд слева");
-    const j = await getJSON(`/api/quiz.js?action=admin_questions&event_slug=${encodeURIComponent(EVENT())}&round_id=${draft.round_id}`);
-    $("#qList").innerHTML =
-      (j.questions||[]).map(q=>`
-        <div class="item">
-          <div>#${q.q_index+1}. ${q.text}</div>
+      <!-- ====== Конференция ====== -->
+      <section id="conf" class="card" style="display: none">
+        <!-- read-only блок -->
+        <div class="card">
           <div class="row">
-            <button class="btn ghost" onclick='fillQ(${q.id},${q.q_index},${JSON.stringify(q.options).replace(/'/g,"&apos;")},${q.correct_index},${JSON.stringify(q.text).replace(/'/g,"&apos;")})'>Редакт.</button>
-            <button class="btn secondary" onclick='delQ(${q.id})'>Удалить</button>
+            <span id="c_dot" class="status-dot"></span
+            ><strong>Текущий статус</strong>
+            <span id="c_updated" class="pill">—</span>
+          </div>
+          <div class="mt12"><b>Фаза:</b> <span id="c_phase">—</span></div>
+          <div class="row mt8" id="c_flags">
+            <span class="led" id="led_quiz"><span class="dot"></span>Квиз</span>
+            <span class="led" id="led_logic"
+              ><span class="dot"></span>Где логика?</span
+            >
+            <span class="led" id="led_contact"
+              ><span class="dot"></span>Есть контакт!</span
+            >
+            <span class="led" id="led_100"
+              ><span class="dot"></span>100 к 1</span
+            >
+            <span class="led" id="led_auction"
+              ><span class="dot"></span>Аукцион</span
+            >
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- Форма управления -->
+        <strong>Управление</strong>
+        <div class="mt12 kv">
+          <div class="muted">Фаза</div>
+          <select id="phase">
+            <option value="lobby">lobby</option>
+            <option value="quiz">quiz</option>
+            <option value="logic">logic</option>
+            <option value="contact">contact</option>
+            <option value="onehundred">onehundred</option>
+            <option value="auction">auction</option>
+          </select>
+        </div>
+        <div class="mt12 cols2">
+          <label><input id="f_quiz" type="checkbox" /> Квиз</label>
+          <label><input id="f_logic" type="checkbox" /> Где логика?</label>
+          <label><input id="f_contact" type="checkbox" /> Есть контакт!</label>
+          <label><input id="f_100" type="checkbox" /> 100 к 1</label>
+          <label><input id="f_auction" type="checkbox" /> Аукцион</label>
+        </div>
+        <div class="row mt12">
+          <button class="btn ghost" id="btnLoadState">Загрузить</button>
+          <button class="btn" id="btnSaveState">Сохранить</button>
+          <span id="saveInfo" class="muted">—</span>
+          <button
+            class="btn secondary"
+            id="btnOpenHall"
+            style="margin-left: auto"
+          >
+            Открыть экран зала
+          </button>
+        </div>
+      </section>
+
+      <!-- ====== Интерактивы ====== -->
+      <section id="quiz" class="card" style="display: none">
+        <div class="row">
+          <strong>Квиз — раунды и вопросы</strong>
+          <span id="qInfo" class="muted" style="margin-left: 8px">—</span>
+        </div>
+
+        <div class="col2 mt12">
+          <!-- Rounds -->
+          <div class="card">
+            <div class="row">
+              <input
+                id="qRoundTitle"
+                type="text"
+                placeholder="Название раунда"
+              />
+              <button class="btn" id="qRoundSave">Сохранить</button>
+              <button class="btn secondary" id="qRoundOpen">Открыть</button>
+              <button class="btn ghost" id="qRoundClose">Закрыть</button>
+            </div>
+            <div class="list mt12" id="qRounds"></div>
+          </div>
+
+          <!-- Questions -->
+          <div class="card">
+            <div class="muted">Выбранный раунд: <b id="qCurrent">—</b></div>
+            <div class="mt8">Текст вопроса</div>
+            <textarea id="qText"></textarea>
+            <div class="mt8 cols2">
+              <input id="o1" type="text" placeholder="Вариант 1" />
+              <input id="o2" type="text" placeholder="Вариант 2" />
+              <input id="o3" type="text" placeholder="Вариант 3" />
+              <input id="o4" type="text" placeholder="Вариант 4" />
+            </div>
+            <div class="mt8 kv">
+              <div class="muted">Правильный индекс</div>
+              <input id="qCorrect" type="text" placeholder="0..3" />
+            </div>
+            <div class="row mt8">
+              <button class="btn" id="qAdd">Добавить вопрос</button>
+              <button class="btn secondary" id="qUpdate">
+                Обновить выбранный
+              </button>
+              <button class="btn ghost" id="qDelete">Удалить выбранный</button>
+              <span id="qMsg" class="muted">—</span>
+            </div>
+            <div class="list mt12" id="qList"></div>
+
+            <hr />
+            <div class="row">
+              <button class="btn" id="qStart">Старт раунда</button>
+              <button class="btn secondary" id="qNext">Следующий вопрос</button>
+              <button class="btn secondary" id="qReveal">
+                Начислить (+10)
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== Лидерборд ====== -->
+      <section id="board" class="card" style="display: none">
+        <strong>Лидерборд (превью)</strong>
+        <div class="row mt12">
+          <button class="btn secondary" id="bOpen">Открыть экран зала</button>
+          <button class="btn ghost" id="bReload">Обновить</button>
+        </div>
+        <div class="list mt12" id="bList"></div>
+      </section>
+    </div>
+
+    <section id="people" class="card" style="display: none">
+      <div class="row">
+        <strong>Участники события</strong>
+        <span id="pInfo" class="muted">—</span>
+      </div>
+
+      <div class="row mt12" style="gap: 8px">
+        <input
+          id="pSearch"
+          type="text"
+          placeholder="Поиск по имени/нику"
+          style="max-width: 320px"
+        />
+        <select id="pSort">
+          <option value="score|desc">По баллам ↓</option>
+          <option value="score|asc">По баллам ↑</option>
+          <option value="name|asc">По имени A→Z</option>
+          <option value="name|desc">По имени Z→A</option>
+          <option value="created|desc">Недавно</option>
+          <option value="created|asc">Давно</option>
+        </select>
+        <button class="btn" id="pReload">Обновить</button>
+        <div style="margin-left: auto"></div>
+        <button class="btn secondary" id="pBonus10">Бонус +10 всем</button>
+        <button class="btn ghost" id="pReset50">Сбросить на 50</button>
+      </div>
+
+      <div class="list mt12" id="pList"></div>
+    </section>
+
+    <script>
+      // ===== helpers =====
+      const $ = (s) => document.querySelector(s);
+      const EVENT = () => $("#slug").value || "pr-demo";
+      const TOKEN = () => $("#token").value || "";
+
+      // persist slug/token
+      (function bootstrapPersist() {
+        const s = localStorage.getItem("adm_event_slug");
+        const t = localStorage.getItem("adm_admin_token");
+        if (s) $("#slug").value = s;
+        else $("#slug").value = "pr-demo";
+        if (t) $("#token").value = t;
+        $("#slug").addEventListener("input", (e) =>
+          localStorage.setItem("adm_event_slug", e.target.value)
+        );
+        $("#token").addEventListener("input", (e) =>
+          localStorage.setItem("adm_admin_token", e.target.value)
+        );
+      })();
+
+      // tabs
+      const tabs = [...document.querySelectorAll(".tab")];
+      function showTab(name) {
+        tabs.forEach((t) =>
+          t.classList.toggle("active", t.dataset.tab === name)
+        );
+        document
+          .querySelectorAll("section")
+          .forEach((s) => (s.style.display = s.id === name ? "block" : "none"));
+        localStorage.setItem("adm_tab", name);
+      }
+      tabs.forEach((t) => (t.onclick = () => showTab(t.dataset.tab)));
+      showTab(localStorage.getItem("adm_tab") || "dash");
+
+      async function getJSON(path, headers = {}) {
+        const r = await fetch(path, { headers });
+        if (!r.ok) throw new Error(path + " " + r.status);
+        return r.json();
+      }
+      async function postJSON(path, body, headers = {}) {
+        const r = await fetch(path, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...headers },
+          body: JSON.stringify(body || {}),
+        });
+        if (!r.ok) throw new Error(path + " " + r.status);
+        return r.json();
+      }
+
+      // ===== Статус =====
+      async function dashLoad() {
+        // текущее состояние
+        try {
+          const s = await getJSON(
+            `/api/event/state.js?event_slug=${encodeURIComponent(EVENT())}`
+          );
+          $("#supdated").textContent =
+            "updated_at: " + (s.state?.updated_at || "—");
+          $("#sdot").classList.add("status-ok");
+          $("#sdot").classList.remove("status-err");
+        } catch {
+          $("#sdot").classList.remove("status-ok");
+          $("#sdot").classList.add("status-err");
+        }
+        // статистика
+        const st = await getJSON(
+          `/api/event/stats.js?event_slug=${encodeURIComponent(EVENT())}`
+        );
+        $("#d_online").textContent = st.online;
+        $("#d_total").textContent = st.total_registered;
+        $("#d_top").innerHTML =
+          (st.top || [])
+            .map(
+              (r, i) =>
+                `<div class="item"><div>#${i + 1} — ${
+                  r.display_name || "Без имени"
+                }</div><div>${r.score}</div></div>`
+            )
+            .join("") || `<div class="item">Пусто</div>`;
+      }
+      $("#d_refresh").onclick = dashLoad;
+      let dashTimer = setInterval(
+        () => $("#d_auto").checked && dashLoad(),
+        3000
+      );
+      $("#d_auto").onchange = () => {
+        if (!$("#d_auto").checked) clearInterval(dashTimer);
+        else
+          dashTimer = setInterval(
+            () => $("#d_auto").checked && dashLoad(),
+            3000
+          );
+      };
+      dashLoad();
+
+      // ===== Конференция =====
+      async function confRefreshReadonly() {
+        try {
+          const d = await getJSON(
+            `/api/event/state.js?event_slug=${encodeURIComponent(EVENT())}`
+          );
+          const st = d.state || {};
+          $("#c_phase").textContent = st.phase || "—";
+          $("#c_updated").textContent = "updated_at: " + (st.updated_at || "—");
+          const set = (id, ok) => {
+            const el = $(id);
+            el.classList.toggle("ok", ok);
+            el.classList.toggle("err", !ok);
+          };
+          set("#led_quiz", !!st.quiz_open);
+          set("#led_logic", !!st.logic_open);
+          set("#led_contact", !!st.contact_open);
+          set("#led_100", !!st.onehundred_open);
+          set("#led_auction", !!st.auction_open);
+          $("#c_dot").classList.add("status-ok");
+          $("#c_dot").classList.remove("status-err");
+        } catch {
+          $("#c_dot").classList.remove("status-ok");
+          $("#c_dot").classList.add("status-err");
+        }
+      }
+      setInterval(confRefreshReadonly, 3000);
+      confRefreshReadonly();
+
+      $("#btnOpenHall").onclick = () =>
+        window.open(
+          `/hall.html?event=${encodeURIComponent(EVENT())}`,
+          "_blank"
+        );
+
+      $("#btnLoadState").onclick = async () => {
+        const d = await getJSON(
+          `/api/event/state.js?event_slug=${encodeURIComponent(EVENT())}`
+        );
+        const st = d.state || {};
+        $("#phase").value = st.phase || "lobby";
+        $("#f_quiz").checked = !!st.quiz_open;
+        $("#f_logic").checked = !!st.logic_open;
+        $("#f_contact").checked = !!st.contact_open;
+        $("#f_100").checked = !!st.onehundred_open;
+        $("#f_auction").checked = !!st.auction_open;
+        $("#saveInfo").textContent = "Загружено";
+      };
+      $("#btnSaveState").onclick = async () => {
+        const patch = {
+          phase: $("#phase").value,
+          quiz_open: $("#f_quiz").checked,
+          logic_open: $("#f_logic").checked,
+          contact_open: $("#f_contact").checked,
+          onehundred_open: $("#f_100").checked,
+          auction_open: $("#f_auction").checked,
+        };
+        try {
+          await postJSON(
+            `/api/admin/state_set.js?event_slug=${encodeURIComponent(EVENT())}`,
+            patch,
+            { "x-admin-token": TOKEN() }
+          );
+          $("#saveInfo").textContent = "Сохранено ✓";
+          confRefreshReadonly();
+        } catch {
+          $("#saveInfo").textContent = "Ошибка";
+        }
+      };
+
+      // ===== Интерактивы (квиз) =====
+      const LSK = "adm_quiz_draft_v1";
+      const draft = {
+        round_id: localStorage.getItem(LSK + "_round") || "",
+        title: localStorage.getItem(LSK + "_title") || "",
+        qText: localStorage.getItem(LSK + "_qText") || "",
+        o1: localStorage.getItem(LSK + "_o1") || "",
+        o2: localStorage.getItem(LSK + "_o2") || "",
+        o3: localStorage.getItem(LSK + "_o3") || "",
+        o4: localStorage.getItem(LSK + "_o4") || "",
+        qCorrect: localStorage.getItem(LSK + "_qCorrect") || "",
+      };
+      $("#qRoundTitle").value = draft.title;
+      $("#qText").value = draft.qText;
+      ["o1", "o2", "o3", "o4"].forEach((id) => ($("#" + id).value = draft[id]));
+      $("#qCorrect").value = draft.qCorrect;
+      $("#qCurrent").textContent = draft.round_id || "—";
+      ["qRoundTitle", "qText", "o1", "o2", "o3", "o4", "qCorrect"].forEach(
+        (id) => {
+          $("#" + id).addEventListener("input", (e) =>
+            localStorage.setItem(
+              LSK + "_" + id.replace(/^q/, "q").replace(/^o/, "o"),
+              e.target.value
+            )
+          );
+        }
+      );
+
+      async function loadRounds() {
+        const j = await getJSON(
+          `/api/quiz.js?action=admin_rounds&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`
+        );
+        $("#qRounds").innerHTML =
+          (j.rounds || [])
+            .map(
+              (r) => `
+        <div class="item">
+          <div>#${r.id} — ${r.title} ${
+                r.is_open ? '<span class="pill">open</span>' : ""
+              }</div>
+          <div class="row"><button class="btn secondary" onclick="pickRound(${
+            r.id
+          }, '${encodeURIComponent(r.title)}')">Выбрать</button></div>
+        </div>`
+            )
+            .join("") || `<div class="item">Пока нет раундов</div>`;
+      }
+      window.pickRound = async (id, encTitle) => {
+        draft.round_id = id;
+        localStorage.setItem(LSK + "_round", id);
+        const t = decodeURIComponent(encTitle);
+        $("#qCurrent").textContent = id;
+        $("#qRoundTitle").value = t;
+        localStorage.setItem(LSK + "_title", t);
+        loadQuestions();
+      };
+
+      async function loadQuestions() {
+        $("#qList").innerHTML = "Загрузка...";
+        if (!draft.round_id)
+          return ($("#qList").innerHTML = "Выбери раунд слева");
+        const j = await getJSON(
+          `/api/quiz.js?action=admin_questions&event_slug=${encodeURIComponent(
+            EVENT()
+          )}&round_id=${draft.round_id}`
+        );
+        $("#qList").innerHTML =
+          (j.questions || [])
+            .map(
+              (q) => `
+        <div class="item">
+          <div>#${q.q_index + 1}. ${q.text}</div>
+          <div class="row">
+            <button class="btn ghost" onclick='fillQ(${q.id},${
+                q.q_index
+              },${JSON.stringify(q.options).replace(/'/g, "&apos;")},${
+                q.correct_index
+              },${JSON.stringify(q.text).replace(
+                /'/g,
+                "&apos;"
+              )})'>Редакт.</button>
+            <button class="btn secondary" onclick='delQ(${
+              q.id
+            })'>Удалить</button>
           </div>
         </div>`
-      ).join('') || `<div class="item">Пока нет вопросов</div>`;
-  }
-  window.fillQ = (id, idx, opts, correct, text)=>{
-    $("#qText").value = text; localStorage.setItem(LSK+"_qText", text);
-    ["o1","o2","o3","o4"].forEach((k,i)=> { $("#"+k).value = opts[i] ?? ""; localStorage.setItem(LSK+"_"+k, $("#"+k).value); });
-    $("#qCorrect").value = correct; localStorage.setItem(LSK+"_qCorrect", correct);
-    $("#qMsg").textContent = `Редактируем вопрос #${idx+1} (id:${id})`; window.__editingQ = id;
-  };
-  window.delQ = async (id)=>{
-    if(!confirm("Удалить вопрос?")) return;
-    await postJSON(`/api/quiz.js?action=admin_question_delete&event_slug=${encodeURIComponent(EVENT())}`, { id }, { "x-admin-token": TOKEN() });
-    loadQuestions();
-  };
+            )
+            .join("") || `<div class="item">Пока нет вопросов</div>`;
+      }
+      window.fillQ = (id, idx, opts, correct, text) => {
+        $("#qText").value = text;
+        localStorage.setItem(LSK + "_qText", text);
+        ["o1", "o2", "o3", "o4"].forEach((k, i) => {
+          $("#" + k).value = opts[i] ?? "";
+          localStorage.setItem(LSK + "_" + k, $("#" + k).value);
+        });
+        $("#qCorrect").value = correct;
+        localStorage.setItem(LSK + "_qCorrect", correct);
+        $("#qMsg").textContent = `Редактируем вопрос #${idx + 1} (id:${id})`;
+        window.__editingQ = id;
+      };
+      window.delQ = async (id) => {
+        if (!confirm("Удалить вопрос?")) return;
+        await postJSON(
+          `/api/quiz.js?action=admin_question_delete&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          { id },
+          { "x-admin-token": TOKEN() }
+        );
+        loadQuestions();
+      };
 
-  $("#qRoundSave").onclick = async ()=>{
-    const title = $("#qRoundTitle").value.trim(); if(!title) return $("#qInfo").textContent="Название пусто";
-    const body = draft.round_id ? { id:Number(draft.round_id), title } : { title };
-    const j = await postJSON(`/api/quiz.js?action=admin_round_upsert&event_slug=${encodeURIComponent(EVENT())}`, body, { "x-admin-token": TOKEN() });
-    draft.round_id = j.id; localStorage.setItem(LSK+"_round", draft.round_id);
-    $("#qCurrent").textContent = draft.round_id; $("#qInfo").textContent = "Раунд сохранён"; loadRounds(); loadQuestions();
-  };
-  $("#qRoundOpen").onclick = async ()=>{
-    if(!draft.round_id) return alert("Сначала создай/выбери раунд");
-    await postJSON(`/api/quiz.js?action=admin_round_open&event_slug=${encodeURIComponent(EVENT())}`, { id:Number(draft.round_id) }, { "x-admin-token": TOKEN() });
-    loadRounds(); $("#qInfo").textContent = "Раунд открыт";
-  };
-  $("#qRoundClose").onclick = async ()=>{
-    if(!draft.round_id) return;
-    await postJSON(`/api/quiz.js?action=admin_round_close&event_slug=${encodeURIComponent(EVENT())}`, { id:Number(draft.round_id) }, { "x-admin-token": TOKEN() });
-    loadRounds(); $("#qInfo").textContent = "Раунд закрыт";
-  };
+      $("#qRoundSave").onclick = async () => {
+        const title = $("#qRoundTitle").value.trim();
+        if (!title) return ($("#qInfo").textContent = "Название пусто");
+        const body = draft.round_id
+          ? { id: Number(draft.round_id), title }
+          : { title };
+        const j = await postJSON(
+          `/api/quiz.js?action=admin_round_upsert&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          body,
+          { "x-admin-token": TOKEN() }
+        );
+        draft.round_id = j.id;
+        localStorage.setItem(LSK + "_round", draft.round_id);
+        $("#qCurrent").textContent = draft.round_id;
+        $("#qInfo").textContent = "Раунд сохранён";
+        loadRounds();
+        loadQuestions();
+      };
+      $("#qRoundOpen").onclick = async () => {
+        if (!draft.round_id) return alert("Сначала создай/выбери раунд");
+        await postJSON(
+          `/api/quiz.js?action=admin_round_open&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          { id: Number(draft.round_id) },
+          { "x-admin-token": TOKEN() }
+        );
+        loadRounds();
+        $("#qInfo").textContent = "Раунд открыт";
+      };
+      $("#qRoundClose").onclick = async () => {
+        if (!draft.round_id) return;
+        await postJSON(
+          `/api/quiz.js?action=admin_round_close&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          { id: Number(draft.round_id) },
+          { "x-admin-token": TOKEN() }
+        );
+        loadRounds();
+        $("#qInfo").textContent = "Раунд закрыт";
+      };
 
-  $("#qAdd").onclick = async ()=>{
-    if(!draft.round_id) return alert("Выбери раунд");
-    const options = [$("#o1").value,$("#o2").value,$("#o3").value,$("#o4").value].filter(Boolean);
-    const correct = Number($("#qCorrect").value||0);
-    const text = $("#qText").value.trim();
-    await postJSON(`/api/quiz.js?action=admin_question_add&event_slug=${encodeURIComponent(EVENT())}`, { round_id:Number(draft.round_id), text, options, correct_index:correct }, { "x-admin-token": TOKEN() });
-    $("#qMsg").textContent = "Добавлено"; window.__editingQ = null; loadQuestions();
-  };
-  $("#qUpdate").onclick = async ()=>{
-    if(!window.__editingQ) return alert("Выбери вопрос кнопкой «Редакт.»");
-    const options = [$("#o1").value,$("#o2").value,$("#o3").value,$("#o4").value].filter(Boolean);
-    const correct = Number($("#qCorrect").value||0);
-    const text = $("#qText").value.trim();
-    await postJSON(`/api/quiz.js?action=admin_question_update&event_slug=${encodeURIComponent(EVENT())}`, { id:Number(window.__editingQ), text, options, correct_index:correct }, { "x-admin-token": TOKEN() });
-    $("#qMsg").textContent = "Обновлено"; loadQuestions();
-  };
+      $("#qAdd").onclick = async () => {
+        if (!draft.round_id) return alert("Выбери раунд");
+        const options = [
+          $("#o1").value,
+          $("#o2").value,
+          $("#o3").value,
+          $("#o4").value,
+        ].filter(Boolean);
+        const correct = Number($("#qCorrect").value || 0);
+        const text = $("#qText").value.trim();
+        await postJSON(
+          `/api/quiz.js?action=admin_question_add&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          {
+            round_id: Number(draft.round_id),
+            text,
+            options,
+            correct_index: correct,
+          },
+          { "x-admin-token": TOKEN() }
+        );
+        $("#qMsg").textContent = "Добавлено";
+        window.__editingQ = null;
+        loadQuestions();
+      };
+      $("#qUpdate").onclick = async () => {
+        if (!window.__editingQ) return alert("Выбери вопрос кнопкой «Редакт.»");
+        const options = [
+          $("#o1").value,
+          $("#o2").value,
+          $("#o3").value,
+          $("#o4").value,
+        ].filter(Boolean);
+        const correct = Number($("#qCorrect").value || 0);
+        const text = $("#qText").value.trim();
+        await postJSON(
+          `/api/quiz.js?action=admin_question_update&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          {
+            id: Number(window.__editingQ),
+            text,
+            options,
+            correct_index: correct,
+          },
+          { "x-admin-token": TOKEN() }
+        );
+        $("#qMsg").textContent = "Обновлено";
+        loadQuestions();
+      };
 
-  $("#qStart").onclick = async ()=>{
-    await postJSON(`/api/quiz.js?action=admin_start&event_slug=${encodeURIComponent(EVENT())}`, { round_id:Number(draft.round_id) }, { "x-admin-token": TOKEN() });
-    $("#qInfo").textContent = "Раунд открыт";
-  };
-  $("#qNext").onclick = async ()=>{
-    await postJSON(`/api/quiz.js?action=admin_next&event_slug=${encodeURIComponent(EVENT())}`, {}, { "x-admin-token": TOKEN() });
-    $("#qInfo").textContent = "Следующий вопрос";
-  };
-  $("#qReveal").onclick = async ()=>{
-    const j = await postJSON(`/api/quiz.js?action=admin_reveal&event_slug=${encodeURIComponent(EVENT())}`, {}, { "x-admin-token": TOKEN() });
-    $("#qInfo").textContent = "Начислено: " + (j.awarded||0);
-  };
-  loadRounds(); if(draft.round_id) loadQuestions();
+      $("#qStart").onclick = async () => {
+        await postJSON(
+          `/api/quiz.js?action=admin_start&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          { round_id: Number(draft.round_id) },
+          { "x-admin-token": TOKEN() }
+        );
+        $("#qInfo").textContent = "Раунд открыт";
+      };
+      $("#qNext").onclick = async () => {
+        await postJSON(
+          `/api/quiz.js?action=admin_next&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          {},
+          { "x-admin-token": TOKEN() }
+        );
+        $("#qInfo").textContent = "Следующий вопрос";
+      };
+      $("#qReveal").onclick = async () => {
+        const j = await postJSON(
+          `/api/quiz.js?action=admin_reveal&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          {},
+          { "x-admin-token": TOKEN() }
+        );
+        $("#qInfo").textContent = "Начислено: " + (j.awarded || 0);
+      };
+      loadRounds();
+      if (draft.round_id) loadQuestions();
 
-  // ===== Лидерборд =====
-  async function boardLoad(){
-    const j = await getJSON(`/api/leaderboard.js?event_slug=${encodeURIComponent(EVENT())}&limit=10`);
-    $("#bList").innerHTML =
-      (j.top||[]).map((r,i)=>`<div class="item"><div>#${i+1} — ${r.display_name||'Без имени'}</div><div>${r.score}</div></div>`).join('')
-      || `<div class="item">Пусто</div>`;
-  }
-  $("#bOpen").onclick = ()=> window.open(`/hall.html?event=${encodeURIComponent(EVENT())}`, "_blank");
-  $("#bReload").onclick = boardLoad; boardLoad();
-</script>
-</body>
+      // ===== Лидерборд =====
+      async function boardLoad() {
+        const j = await getJSON(
+          `/api/leaderboard.js?event_slug=${encodeURIComponent(
+            EVENT()
+          )}&limit=10`
+        );
+        $("#bList").innerHTML =
+          (j.top || [])
+            .map(
+              (r, i) =>
+                `<div class="item"><div>#${i + 1} — ${
+                  r.display_name || "Без имени"
+                }</div><div>${r.score}</div></div>`
+            )
+            .join("") || `<div class="item">Пусто</div>`;
+      }
+      $("#bOpen").onclick = () =>
+        window.open(
+          `/hall.html?event=${encodeURIComponent(EVENT())}`,
+          "_blank"
+        );
+      $("#bReload").onclick = boardLoad;
+      boardLoad();
+
+      async function pLoad() {
+        const [sortKey, sortDir] = ($("#pSort").value || "score|desc").split(
+          "|"
+        );
+        const q = $("#pSearch").value.trim();
+        const j = await getJSON(
+          `/api/participants.js?action=list&event_slug=${encodeURIComponent(
+            EVENT()
+          )}` +
+            `&sort=${encodeURIComponent(sortKey)}&order=${encodeURIComponent(
+              sortDir
+            )}` +
+            (q ? `&q=${encodeURIComponent(q)}` : ``)
+        );
+        $("#pInfo").textContent = `Всего: ${j.total}`;
+        $("#pList").innerHTML =
+          (j.items || [])
+            .map(
+              (r) => `
+      <div class="item">
+        <div class="row" style="gap:10px">
+          <div style="width:28px;height:28px;border-radius:50%;background:#0b1323;display:flex;align-items:center;justify-content:center">${
+            r.avatar_url || "🙂"
+          }</div>
+          <div>
+            <div><b>${r.display_name || "Без имени"}</b> <span class="muted">@${
+                r.username || "-"
+              }</span></div>
+            <div class="muted">tg: ${r.tg_id || "-"}</div>
+          </div>
+        </div>
+        <div class="row" style="gap:8px">
+          <div class="pill">Баллы: <b>${r.score}</b></div>
+          <button class="btn secondary" onclick="pAdj(${
+            r.participant_id
+          }, 10)">+10</button>
+          <button class="btn secondary" onclick="pAdj(${
+            r.participant_id
+          }, -10)">-10</button>
+          <button class="btn ghost" onclick="pSet(${
+            r.participant_id
+          })">=</button>
+          <button class="btn ghost" onclick="pKick(${
+            r.participant_id
+          })">Удалить</button>
+        </div>
+      </div>`
+            )
+            .join("") || `<div class="item">Пока пусто</div>`;
+      }
+      $("#pReload").onclick = pLoad;
+      $("#pSort").onchange = pLoad;
+      $("#pSearch").oninput = () => {
+        clearTimeout(window.__pT);
+        window.__pT = setTimeout(pLoad, 300);
+      };
+
+      window.pAdj = async (id, delta) => {
+        await postJSON(
+          `/api/participants.js?action=adjust&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          { participant_id: id, delta },
+          { "x-admin-token": TOKEN() }
+        );
+        pLoad();
+      };
+      window.pSet = async (id) => {
+        const v = prompt("Выставить баллы =", "50");
+        if (v == null) return;
+        const score = Number(v);
+        if (!Number.isFinite(score)) return alert("Нужно число");
+        await postJSON(
+          `/api/participants.js?action=set&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          { participant_id: id, score },
+          { "x-admin-token": TOKEN() }
+        );
+        pLoad();
+      };
+      window.pKick = async (id) => {
+        if (!confirm("Удалить участника из события?")) return;
+        await postJSON(
+          `/api/participants.js?action=kick&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          { participant_id: id },
+          { "x-admin-token": TOKEN() }
+        );
+        pLoad();
+      };
+
+      $("#pBonus10").onclick = async () => {
+        if (!confirm("Начислить всем +10?")) return;
+        await postJSON(
+          `/api/participants.js?action=bonus_all&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          { delta: 10 },
+          { "x-admin-token": TOKEN() }
+        );
+        pLoad();
+      };
+      $("#pReset50").onclick = async () => {
+        if (!confirm("Сбросить всем на 50?")) return;
+        await postJSON(
+          `/api/participants.js?action=reset_scores&event_slug=${encodeURIComponent(
+            EVENT()
+          )}`,
+          { to: 50 },
+          { "x-admin-token": TOKEN() }
+        );
+        pLoad();
+      };
+
+      // автопереключение табов сохраняется, поэтому при первом входе подгрузим, если открыта вкладка
+      if (localStorage.getItem("adm_tab") === "people") pLoad();
+    </script>
+  </body>
 </html>
