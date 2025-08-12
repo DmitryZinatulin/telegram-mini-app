@@ -1,44 +1,155 @@
 <!doctype html>
-<meta charset="utf-8">
-<title>Admin</title>
-<style>
-  body{font-family:system-ui,Arial;margin:0;padding:24px;background:#0b1220;color:#e7eaf1}
-  .grid{display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:16px;margin-bottom:20px}
-  .card{background:#121a2a;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-  .title{font-size:14px;color:#9aa4b2;margin:0 0 8px}
-  .num{font-size:28px;font-weight:700;margin:0}
-  table{width:100%;border-collapse:collapse}
-  th,td{padding:10px 8px;border-bottom:1px solid #1f2a44}
-  th{color:#9aa4b2;text-align:left;font-weight:600}
-</style>
-<h1 style="margin:0 0 16px">Admin</h1>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Admin • Pernod Ricard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root{ --bg:#0b1020; --card:#121a2a; --text:#e9eefc; --muted:#96a0b8; --accent:#4c8dff; }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    .wrap{max-width:860px;margin:24px auto;padding:0 16px}
+    .card{background:var(--card);border:1px solid #1e2840;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:16px 16px}
+    h1{font-size:18px;margin:0 0 12px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    label{display:flex;gap:8px;align-items:center}
+    input[type="text"], select{
+      background:#0b1323;border:1px solid #223154;color:var(--text);
+      padding:8px 10px;border-radius:10px;outline:none;min-width:200px
+    }
+    .btn{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+    .btn.secondary{background:#24365d}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .muted{color:var(--muted)}
+    .sp{flex:1}
+    .switch{display:inline-flex;align-items:center;gap:8px}
+    .switch input{transform:scale(1.2)}
+    .kv{display:grid;grid-template-columns:140px 1fr;gap:8px;align-items:center}
+    .mt12{margin-top:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Админка события</h1>
+      <div class="row mt12">
+        <div class="kv">
+          <div class="muted">Event slug</div>
+          <input id="slug" type="text" value="pr-demo">
+        </div>
+        <div class="kv">
+          <div class="muted">Admin token</div>
+          <input id="token" type="text" placeholder="вставь ADMIN_TOKEN">
+        </div>
+        <div class="sp"></div>
+        <button class="btn secondary" id="btnRefresh">Обновить</button>
+      </div>
 
-<div class="grid">
-  <div class="card"><p class="title">Онлайн</p><p class="num" id="online">—</p></div>
-  <div class="card"><p class="title">Всего участников</p><p class="num" id="total">—</p></div>
-  <div class="card"><p class="title">Обновлено</p><p class="num" id="updated">—</p></div>
-</div>
+      <div class="row mt12">
+        <div class="kv">
+          <div class="muted">Фаза</div>
+          <select id="phase">
+            <option value="lobby">lobby</option>
+            <option value="quiz">quiz</option>
+            <option value="logic">logic</option>
+            <option value="contact">contact</option>
+            <option value="onehundred">onehundred</option>
+            <option value="auction">auction</option>
+          </select>
+        </div>
+        <button class="btn" id="btnApplyPhase">Применить фазу</button>
+      </div>
 
-<div class="card">
-  <p class="title">Лидерборд (топ-10)</p>
-  <table>
-    <thead><tr><th>#</th><th>Имя</th><th>Баллы</th></tr></thead>
-    <tbody id="tbody"></tbody>
-  </table>
-</div>
+      <div class="grid mt12">
+        <label class="switch"><input id="f_quiz" type="checkbox"> Квиз</label>
+        <label class="switch"><input id="f_logic" type="checkbox"> Где логика?</label>
+        <label class="switch"><input id="f_contact" type="checkbox"> Есть контакт!</label>
+        <label class="switch"><input id="f_100" type="checkbox"> 100 к 1</label>
+        <label class="switch"><input id="f_auction" type="checkbox"> Аукцион</label>
+      </div>
 
-<script>
-async function load(){
-  const r = await fetch('/api/stats.js'); // ВАЖНО: .js
-  const s = await r.json();
-  online.textContent  = s.online;
-  total.textContent   = s.total;
-  updated.textContent = new Date().toLocaleTimeString();
+      <div class="row mt12">
+        <button class="btn" id="btnApplyFlags">Сохранить флаги</button>
+        <div class="muted" id="status"></div>
+      </div>
 
-  tbody.innerHTML = s.leaderboard.map((row, i) =>
-    `<tr><td>${i+1}</td><td>${row.display_name || 'Без имени'}</td><td>${row.score}</td></tr>`
-  ).join('');
-}
-load();
-setInterval(load, 2000);
-</script>
+      <div class="mt12 muted" id="info">—</div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (s)=>document.querySelector(s);
+    const statusEl = $('#status');
+    const infoEl = $('#info');
+    const phaseSel = $('#phase');
+
+    async function getState(){
+      const slug = $('#slug').value.trim() || 'pr-demo';
+      const r = await fetch(`/api/event/state.js?event_slug=${encodeURIComponent(slug)}`);
+      if(!r.ok){ throw new Error('state ' + r.status); }
+      return r.json();
+    }
+
+    async function setStatePatch(patch){
+      const slug = $('#slug').value.trim() || 'pr-demo';
+      const token = $('#token').value.trim();
+      const r = await fetch('/api/admin/state_set.js', {
+        method:'POST',
+        headers:{'Content-Type':'application/json', 'x-admin-token': token},
+        body: JSON.stringify({ event_slug: slug, patch })
+      });
+      if(!r.ok){ throw new Error('set ' + r.status); }
+      return r.json();
+    }
+
+    async function refresh(){
+      try{
+        const d = await getState();
+        const st = d.state;
+        phaseSel.value = st.phase;
+        $('#f_quiz').checked     = !!st.quiz_open;
+        $('#f_logic').checked    = !!st.logic_open;
+        $('#f_contact').checked  = !!st.contact_open;
+        $('#f_100').checked      = !!st.onehundred_open;
+        $('#f_auction').checked  = !!st.auction_open;
+        infoEl.textContent = `updated_at: ${st.updated_at}`;
+        statusEl.textContent = 'OK';
+      }catch(e){
+        console.log(e);
+        statusEl.textContent = 'Ошибка загрузки';
+      }
+    }
+
+    $('#btnRefresh').onclick = refresh;
+
+    $('#btnApplyPhase').onclick = async ()=>{
+      try{
+        const { state } = await setStatePatch({ phase: phaseSel.value });
+        statusEl.textContent = `Фаза: ${state.phase} ✓`;
+      }catch(e){
+        statusEl.textContent = 'Ошибка сохранения фазы';
+      }
+    };
+
+    $('#btnApplyFlags').onclick = async ()=>{
+      try{
+        const patch = {
+          quiz_open:       $('#f_quiz').checked,
+          logic_open:      $('#f_logic').checked,
+          contact_open:    $('#f_contact').checked,
+          onehundred_open: $('#f_100').checked,
+          auction_open:    $('#f_auction').checked
+        };
+        const { state } = await setStatePatch(patch);
+        statusEl.textContent = 'Флаги сохранены ✓';
+        phaseSel.value = state.phase;
+      }catch(e){
+        statusEl.textContent = 'Ошибка сохранения флагов';
+      }
+    };
+
+    // авто-обновление
+    refresh();
+    setInterval(refresh, 2000);
+  </script>
+</body>
+</html>

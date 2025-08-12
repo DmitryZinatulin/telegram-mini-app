@@ -257,8 +257,7 @@
           const st = s.state;
           document.getElementById("phase").textContent = "Фаза: " + st.phase;
 
-          // btnQuiz.disabled = !st.quiz_open;
-          btnQuiz.disabled = false;
+          btnQuiz.disabled = !st.quiz_open; 
           btnContact.disabled = !st.contact_open;
           btn100.disabled = !st.onehundred_open;
           btnAuction.disabled = !st.auction_open;
