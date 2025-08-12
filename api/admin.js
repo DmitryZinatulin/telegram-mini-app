@@ -1,29 +1,47 @@
-// /api/admin.js
-import { pool } from "./lib/db.js"; // путь поправь под свой (у тебя db.js в lib/)
+// api/admin.js
+import { pool } from "./lib/db.js";
 
-function getAdminToken(req) {
-  return req.headers["x-admin-token"] || req.headers["X-Admin-Token"] || req.query.admin_token;
+// --- helpers
+function needToken(req) {
+  const got = req.headers["x-admin-token"] || req.headers["X-Admin-Token"] || req.headers["x-admin-token"];
+  const want = process.env.ADMIN_TOKEN || "";
+  if (!want || !got || String(got) !== String(want)) {
+    const e = new Error("unauthorized");
+    e.status = 401;
+    throw e;
+  }
 }
-function needAdmin(req) {
-  const t = getAdminToken(req);
-  return t && t === process.env.ADMIN_TOKEN;
-}
+
 async function eventIdBySlug(slug) {
-  const r = await pool.query("select id from events where slug=$1", [slug]);
-  return r.rowCount ? r.rows[0].id : null;
+  const ev = await pool.query("select id from events where slug=$1", [slug]);
+  if (!ev.rowCount) {
+    const e = new Error("event_not_found");
+    e.status = 404;
+    throw e;
+  }
+  return ev.rows[0].id;
+}
+
+function parseIntSafe(v, def = 0) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.trunc(n) : def;
 }
 
 export default async function handler(req, res) {
   try {
-    const action = String(req.query.action || "");
-    const event_slug = String(req.query.event_slug || "pr-demo");
-    const evId = await eventIdBySlug(event_slug);
-    if (!evId) return res.status(404).json({ error: "event_not_found" });
+    const { action = "", event_slug = "" } = req.query || {};
+    if (!action) return res.status(400).json({ error: "action_required" });
+    if (!event_slug) return res.status(400).json({ error: "event_slug_required" });
 
-    // ---------- state_set (админ) ----------
+    // все админ-экшены требуют токен
+    needToken(req);
+
+    // берём event_id
+    const eventId = await eventIdBySlug(event_slug);
+
+    // маршрутизация
     if (action === "state_set") {
-      if (!needAdmin(req)) return res.status(401).json({ error: "unauthorized" });
-
+      // PATCH состояния события
       const {
         phase,
         quiz_open,
@@ -31,126 +49,146 @@ export default async function handler(req, res) {
         contact_open,
         onehundred_open,
         auction_open,
-      } = req.body || {};
+      } = (req.body || {});
 
-      // гарантируем строку
-      await pool.query(
-        `insert into event_state(event_id) values($1)
-         on conflict(event_id) do nothing`,
-        [evId]
-      );
-
-      const up = await pool.query(
-        `update event_state
-           set phase=coalesce($2, phase),
-               quiz_open=coalesce($3, quiz_open),
-               logic_open=coalesce($4, logic_open),
-               contact_open=coalesce($5, contact_open),
-               onehundred_open=coalesce($6, onehundred_open),
-               auction_open=coalesce($7, auction_open),
-               updated_at=now()
-         where event_id=$1
-         returning phase, quiz_open, logic_open, contact_open, onehundred_open, auction_open, updated_at`,
-        [evId, phase, quiz_open, logic_open, contact_open, onehundred_open, auction_open]
-      );
-      return res.json({ ok: true, state: up.rows[0] });
+      // делаем upsert в event_state
+      const q = `
+        insert into event_state(event_id, phase, quiz_open, logic_open, contact_open, onehundred_open, auction_open, updated_at)
+        values ($1, $2, coalesce($3,false), coalesce($4,false), coalesce($5,false), coalesce($6,false), coalesce($7,false), now())
+        on conflict (event_id) do update set
+          phase=excluded.phase,
+          quiz_open=excluded.quiz_open,
+          logic_open=excluded.logic_open,
+          contact_open=excluded.contact_open,
+          onehundred_open=excluded.onehundred_open,
+          auction_open=excluded.auction_open,
+          updated_at=now()
+        returning event_id, phase, quiz_open, logic_open, contact_open, onehundred_open, auction_open, updated_at
+      `;
+      const r = await pool.query(q, [
+        eventId,
+        phase || "lobby",
+        !!quiz_open,
+        !!logic_open,
+        !!contact_open,
+        !!onehundred_open,
+        !!auction_open,
+      ]);
+      return res.json({ ok: true, state: r.rows[0] });
     }
 
-    // ---------- participants_list (чтение без токена) ----------
-    if (action === "participants_list" && req.method === "GET") {
+    // ----- participants: общие вспомогательные
+    const sortMap = {
+      score: "p.score",
+      name: "p.display_name",
+      created: "p.created_at",
+    };
+
+    if (action === "participants_list") {
+      const sort = String(req.query.sort || "score");
+      const order = String(req.query.order || "desc").toLowerCase() === "asc" ? "asc" : "desc";
       const q = String(req.query.q || "").trim();
-      const sort = String(req.query.sort || "score").toLowerCase();   // score|name|created
-      const order = String(req.query.order || "desc").toLowerCase();  // asc|desc
-      const limit = Math.min(parseInt(req.query.limit || "100", 10), 500);
-      const offset = Math.max(parseInt(req.query.offset || "0", 10), 0);
+      const limit = Math.min(Math.max(parseIntSafe(req.query.limit, 100), 1), 500);
+      const offset = Math.max(parseIntSafe(req.query.offset, 0), 0);
 
-      const sortCol =
-        sort === "name" ? "p.display_name" :
-        sort === "created" ? "p.created_at" :
-        "p.score";
-      const sortDir = order === "asc" ? "asc" : "desc";
+      const sortCol = sortMap[sort] || sortMap.score;
 
-      const where = ["p.event_id = $1"];
-      const vals = [evId];
+      const args = [eventId];
+      let where = "where p.event_id=$1";
       if (q) {
-        vals.push(`%${q}%`);
-        where.push("(p.display_name ilike $" + vals.length + " or u.username ilike $" + vals.length + ")");
+        args.push(`%${q}%`);
+        where += ` and (p.display_name ilike $${args.length} or u.username ilike $${args.length})`;
       }
 
-      const totalQ = await pool.query(
-        `select count(*)::int as c
-           from participants p
-           join users u on u.id=p.user_id
-          where ${where.join(" and ")}`,
-        vals
+      const sql = `
+        select
+          p.id as participant_id,
+          p.display_name,
+          p.avatar_url,
+          p.score,
+          p.created_at,
+          u.username,
+          u.tg_id
+        from participants p
+        left join users u on u.id=p.user_id
+        ${where}
+        order by ${sortCol} ${order}
+        limit ${limit} offset ${offset}
+      `;
+      const items = await pool.query(sql, args);
+
+      const cnt = await pool.query(
+        `select count(*)::int as c from participants p ${where}`,
+        args
       );
 
-      vals.push(limit, offset);
-      const listQ = await pool.query(
-        `select p.id as participant_id, u.tg_id, u.username,
-                p.display_name, p.avatar_url, p.score, p.created_at
-           from participants p
-           join users u on u.id=p.user_id
-          where ${where.join(" and ")}
-          order by ${sortCol} ${sortDir}, p.id asc
-          limit $${vals.length-1} offset $${vals.length}`,
-        vals
-      );
-
-      return res.json({ total: totalQ.rows[0].c, items: listQ.rows });
+      return res.json({ total: cnt.rows[0].c, items: items.rows });
     }
 
-    // ---------- ниже все операции требуют токен ----------
-    if (!needAdmin(req)) return res.status(401).json({ error: "unauthorized" });
-
-    if (action === "participants_adjust" && req.method === "POST") {
+    if (action === "participants_adjust") {
       const { participant_id, delta } = req.body || {};
-      await pool.query(
-        `update participants set score = score + $2 where id=$1 and event_id=$3`,
-        [participant_id, Number(delta) || 0, evId]
+      if (!participant_id || !Number.isFinite(Number(delta)))
+        return res.status(400).json({ error: "bad_params" });
+
+      const r = await pool.query(
+        `update participants set score=score+($2)
+         where id=$1 and event_id=$3
+         returning id, score`,
+        [participant_id, Number(delta), eventId]
       );
-      return res.json({ ok: true });
+      if (!r.rowCount) return res.status(404).json({ error: "not_found" });
+      return res.json({ ok: true, id: r.rows[0].id, score: r.rows[0].score });
     }
 
-    if (action === "participants_set" && req.method === "POST") {
+    if (action === "participants_set") {
       const { participant_id, score } = req.body || {};
-      await pool.query(
-        `update participants set score = $2 where id=$1 and event_id=$3`,
-        [participant_id, Number(score) || 0, evId]
+      if (!participant_id || !Number.isFinite(Number(score)))
+        return res.status(400).json({ error: "bad_params" });
+
+      const r = await pool.query(
+        `update participants set score=$2
+         where id=$1 and event_id=$3
+         returning id, score`,
+        [participant_id, Number(score), eventId]
       );
-      return res.json({ ok: true });
+      if (!r.rowCount) return res.status(404).json({ error: "not_found" });
+      return res.json({ ok: true, id: r.rows[0].id, score: r.rows[0].score });
     }
 
-    if (action === "participants_kick" && req.method === "POST") {
+    if (action === "participants_kick") {
       const { participant_id } = req.body || {};
-      await pool.query(
+      if (!participant_id) return res.status(400).json({ error: "bad_params" });
+
+      const r = await pool.query(
         `delete from participants where id=$1 and event_id=$2`,
-        [participant_id, evId]
+        [participant_id, eventId]
       );
-      return res.json({ ok: true });
+      return res.json({ ok: true, deleted: r.rowCount });
     }
 
-    if (action === "participants_bonus_all" && req.method === "POST") {
-      const { delta } = req.body || {};
-      await pool.query(
-        `update participants set score = score + $1 where event_id=$2`,
-        [Number(delta) || 0, evId]
+    if (action === "participants_bonus_all") {
+      const { delta = 10 } = req.body || {};
+      const r = await pool.query(
+        `update participants set score=score+($2) where event_id=$1`,
+        [eventId, Number(delta)]
       );
-      return res.json({ ok: true });
+      return res.json({ ok: true, affected: r.rowCount });
     }
 
-    if (action === "participants_reset_scores" && req.method === "POST") {
+    if (action === "participants_reset_scores") {
       const { to = 50 } = req.body || {};
-      await pool.query(
-        `update participants set score = $1 where event_id=$2`,
-        [Number(to) || 50, evId]
+      const r = await pool.query(
+        `update participants set score=$2 where event_id=$1`,
+        [eventId, Number(to)]
       );
-      return res.json({ ok: true });
+      return res.json({ ok: true, affected: r.rowCount });
     }
 
-    return res.status(400).json({ error: "unknown_action" });
+    // неизвестный экшен
+    return res.status(400).json({ error: "unknown_action", action });
   } catch (e) {
+    const code = e.status || 500;
     console.error("admin.js error:", e);
-    return res.status(e.status || 500).json({ error: e.message || "server_error" });
+    res.status(code).json({ error: e.message || "server_error" });
   }
 }
