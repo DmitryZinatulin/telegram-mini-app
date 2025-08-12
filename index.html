@@ -43,6 +43,8 @@
   </div>
 
   <script>
+    const EVENT_SLUG = 'pr-demo';
+
     // Telegram API + тема
     const tg = window.Telegram?.WebApp; tg?.expand();
     const tp = tg?.themeParams || {};
@@ -56,33 +58,68 @@
     // приветствие
     const user = tg?.initDataUnsafe?.user;
     title.textContent = user ? `Привет, ${user.first_name}!` : 'Привет, гость!';
-    sessionHint.textContent = user ? `ID ${user.id} • готово` : 'Открой через Telegram';
+    sessionHint.textContent = user ? `ID ${user.id} • проверяем регистрацию…` : 'Открой через Telegram';
+
+    // helpers (ВАЖНО: .js в путях)
+    async function post(path, data){
+      const r = await fetch(`/api/${path}.js`, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify(data || {})
+      });
+      if (!r.ok) throw new Error(`${path} ${r.status}`);
+      return r.json();
+    }
+    async function get(path, params){
+      const q = new URLSearchParams(params || {}).toString();
+      const r = await fetch(`/api/${path}.js${q ? `?${q}` : ''}`);
+      if (!r.ok) throw new Error(`${path} ${r.status}`);
+      return r.json();
+    }
+
+    // базовая регистрация пользователя + пульс онлайна
+    if (user) {
+      post('register', { tg_id:user.id, username:user.username, display_name:user.first_name }).catch(console.log);
+      setInterval(() => post('ping', { tg_id:user.id }).catch(console.log), 10000);
+    }
+
+    // регистрация в событии (автоматически, если ещё не зарегистрирован)
+    async function ensureParticipant(){
+      if (!user) return;
+
+      // 1) проверяем, есть ли участник в событии
+      const me = await get('event/me', { tg_id:user.id, event_slug: EVENT_SLUG }).catch(console.log);
+      if (me?.registered) {
+        sessionHint.textContent = `Готово • Баланс: ${me.participant.score}`;
+        return;
+      }
+
+      // 2) если нет — авто-join с простым эмодзи-аватаром
+      const avatars = ['🐻','🦊','🐱','🦉','🐼','🦁','🐯','🐨'];
+      const avatar = avatars[Math.floor(Math.random()*avatars.length)];
+      try {
+        await post('event/join', {
+          tg_id: user.id,
+          username: user.username,
+          display_name: user.first_name,
+          avatar_url: avatar,
+          event_slug: EVENT_SLUG
+        });
+        const after = await get('event/me', { tg_id:user.id, event_slug: EVENT_SLUG });
+        sessionHint.textContent = `Успешная регистрация • Баланс: ${after.participant.score}`;
+      } catch (e) {
+        console.log(e);
+        sessionHint.textContent = 'Ошибка регистрации. Попробуйте позже.';
+      }
+    }
+
+    ensureParticipant();
 
     // кнопка
     startBtn.addEventListener('click', () => {
       try { tg?.HapticFeedback?.impactOccurred('medium'); } catch{}
-      tg?.showAlert?.('Это заглушка. Дальше будет выбор игры → регистрация → баллы.');
+      tg?.showAlert?.('Дальше: Лобби → выбор игры → начисление баллов.');
     });
-
-    // API helper (внимание: пути c .js)
-    async function call(path, data){
-      try {
-        const r = await fetch(`/api/${path}.js`, {
-          method: 'POST',
-          headers: { 'Content-Type':'application/json' },
-          body: JSON.stringify(data || {})
-        });
-        console.log(path, r.status);
-      } catch (e) { console.log('api error', path, e); }
-    }
-
-    // регистрация + пульс онлайна
-    if (user) {
-      call('register', { tg_id:user.id, username:user.username, display_name:user.first_name });
-      setInterval(() => call('ping', { tg_id:user.id }), 10000);
-    } else {
-      console.log('Not in Telegram WebApp: user undefined');
-    }
   </script>
 </body>
 </html>
