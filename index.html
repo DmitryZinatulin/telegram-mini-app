@@ -8,119 +8,64 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root{
-      /* Pernod Ricard dark */
-      --bg:#0d172a;           /* общий фон */
-      --card:#0f1b31;         /* карточки */
-      --line:#1d2a47;         /* линии */
-      --text:#eef3ff;         /* основной текст */
-      --muted:#ffffff;        /* вторичный текст */
-      --accent:#4c8dff;       /* акцент / кнопки */
-      --ok:#39d98a;
-      --err:#ff6b6b;
-      --shadow:0 14px 40px rgba(6,17,38,.35);
+      --bg:#0d172a; --card:#0f1b31; --line:#1d2a47; --text:#eef3ff; --muted:#9fb0d1;
+      --accent:#4c8dff; --ok:#39d98a; --err:#ff6b6b; --shadow:0 14px 40px rgba(6,17,38,.35);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0; background:var(--bg); color:var(--text);
-      font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial;
-    }
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial}
     .wrap{max-width:720px;margin:0 auto;padding:20px}
     .logoRow{display:flex;align-items:center;gap:10px;opacity:.9;margin:6px 0 16px}
     .logoRow img{height:24px}
-    .card{
-      background:var(--card); border:1px solid var(--line);
-      border-radius:16px; box-shadow:var(--shadow); padding:18px;
-    }
-    .head{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px
-    }
-    .user{
-      display:flex;align-items:center;gap:10px; min-width:0;
-    }
-    .ava{
-      width:44px;height:44px;border-radius:999px; background:#1b2a49;
-      display:flex;align-items:center;justify-content:center;
-      overflow:hidden;border:1px solid var(--line);
-      box-shadow:0 6px 18px rgba(0,0,0,.25)
-    }
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px}
+    .head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .user{display:flex;align-items:center;gap:10px;min-width:0}
+    .ava{width:44px;height:44px;border-radius:999px;background:#1b2a49;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--line);box-shadow:0 6px 18px rgba(0,0,0,.25)}
     .ava img{width:100%;height:100%;object-fit:cover;display:block}
     .ava span{font-size:22px;opacity:.9}
     .uinfo{min-width:0}
     .uname{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .ustatus{color:var(--muted);font-size:12px}
-    .badge{
-      background:#122141;border:1px solid var(--line);color:#bcd2ff;
-      padding:8px 12px;border-radius:12px;font-weight:700;white-space:nowrap
-    }
-    .phase{
-      text-align:center;margin:8px 0 14px
-    }
-    .phase .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      background:#0a142a;border:1px solid var(--line);padding:8px 12px;border-radius:999px
-    }
-    .green{color:var(--ok)}
-    .red{color:var(--err)}
+    .badge{background:#122141;border:1px solid var(--line);color:#bcd2ff;padding:8px 12px;border-radius:12px;font-weight:700;white-space:nowrap}
+    .phase{text-align:center;margin:8px 0 14px}
+    .phase .pill{display:inline-flex;align-items:center;gap:8px;background:#0a142a;border:1px solid var(--line);padding:8px 12px;border-radius:999px}
     .muted{color:var(--muted)}
-    .grid{
-      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px
-    }
-    .tile{
-      background:linear-gradient(180deg,#122243, #0f1b31);
-      border:1px solid var(--line); border-radius:16px; padding:16px;
-      display:flex;flex-direction:column;gap:8px;min-height:104px;
-      transition:transform .08s ease, box-shadow .12s ease, border-color .12s ease;
-      cursor:pointer;
-    }
-    .tile:hover{transform:translateY(-1px); box-shadow:0 10px 26px rgba(0,0,0,.22)}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .tile{background:linear-gradient(180deg,#122243,#0f1b31);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;min-height:104px;transition:transform .08s ease, box-shadow .12s ease, border-color .12s ease;cursor:pointer}
+    .tile:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(0,0,0,.22)}
     .tile:active{transform:translateY(1px)}
-    .tile h3{color: #ffffff;margin:0;font-size:16px}
+    .tile h3{margin:0;font-size:16px}
     .tile p{margin:0;color:var(--muted);font-size:13px}
     .tile.disabled{opacity:.5;filter:grayscale(.1);cursor:not-allowed}
     .tile.disabled:hover{transform:none;box-shadow:none}
-    .cta{
-      background:var(--accent);color:#fff;border:0;border-radius:12px;padding:14px 16px;
-      font-weight:700; cursor:pointer; width:100%; box-shadow:0 12px 26px rgba(76,141,255,.35);
-    }
+    .cta{background:var(--accent);color:#fff;border:0;border-radius:12px;padding:14px 16px;font-weight:700;cursor:pointer;width:100%;box-shadow:0 12px 26px rgba(76,141,255,.35)}
     .cta:active{transform:translateY(1px)}
     .foot{margin-top:12px;text-align:center;color:var(--muted);font-size:12px}
+    .ghost{background:transparent;border:1px solid var(--line);color:var(--text);padding:12px 14px;border-radius:12px;cursor:pointer}
+    .tiny{padding:6px 8px;border-radius:10px;font-size:12px}
 
-    /* Intro screen */
-    .intro{
-      position:fixed;inset:0; background:linear-gradient(180deg,#0a1326,#0d172a);
-      display:flex;align-items:center;justify-content:center;padding:28px; z-index:10;
-    }
+    /* Intro */
+    .intro{position:fixed;inset:0;background:linear-gradient(180deg,#0a1326,#0d172a);display:flex;align-items:center;justify-content:center;padding:28px;z-index:10}
     .intro .box{max-width:720px;width:100%}
-    .intro .hero{
-      text-align:center;margin-bottom:16px
-    }
+    .intro .hero{text-align:center;margin-bottom:16px}
     .intro .hero img{height:40px;opacity:.95}
     .intro .card{padding:22px}
     .intro h1{margin:0 0 8px;font-size:22px}
     .intro p{margin:6px 0 0;color:var(--muted)}
     .intro .actions{display:flex;gap:10px;margin-top:16px}
-    .ghost{
-      background:transparent;border:1px solid var(--line);color:var(--text);
-      padding:12px 14px;border-radius:12px;cursor:pointer
-    }
 
-    /* tiny */
-    @media (max-width:440px){
-      .grid{grid-template-columns:1fr}
-      .badge{padding:8px 10px}
-    }
+    @media (max-width:440px){ .grid{grid-template-columns:1fr} .badge{padding:8px 10px} }
   </style>
 </head>
 <body>
 <div class="wrap">
 
   <!-- brand -->
-  <div class="logoRow">
+  <div class="logoRow" id="brandTap">
     <img alt="Pernod Ricard" src="https://www.pernod-ricard.com/themes/custom/pr2021_front/assets/images/logo50/logo-white-50.svg">
   </div>
 
-  <!-- INTRO (приветственный) -->
+  <!-- INTRO -->
   <section class="intro" id="intro" style="display:none">
     <div class="box">
       <div class="hero">
@@ -138,9 +83,8 @@
     </div>
   </section>
 
-  <!-- MAIN CARD -->
+  <!-- MAIN -->
   <section class="card">
-
     <div class="head">
       <div class="user">
         <div class="ava" id="ava"><span>🙂</span></div>
@@ -158,35 +102,18 @@
     </div>
 
     <div class="grid" style="margin-top:14px">
-
-      <button class="tile" id="btnQuiz">
-        <h3>Квиз</h3>
-        <p>Раунды с вопросами и вариантами ответов</p>
-      </button>
-
-      <button class="tile" id="btnLogic">
-        <h3>Где логика?</h3>
-        <p>Узнай, что объединяет картинки</p>
-      </button>
-
-      <button class="tile" id="btnContact">
-        <h3>Есть контакт!</h3>
-        <p>Командные ассоциации — найдите слово</p>
-      </button>
-
-      <button class="tile" id="btn100">
-        <h3>100 к 1</h3>
-        <p>Популярные ответы на необычные вопросы</p>
-      </button>
-
-      <button class="tile" id="btnAuction" style="grid-column:1/-1">
-        <h3>Аукцион</h3>
-        <p>Ставь баллы — забирай призы</p>
-      </button>
-
+      <button class="tile" id="btnQuiz"><h3>Квиз</h3><p>Раунды с вопросами и вариантами ответов</p></button>
+      <button class="tile" id="btnLogic"><h3>Где логика?</h3><p>Узнай, что объединяет картинки</p></button>
+      <button class="tile" id="btnContact"><h3>Есть контакт!</h3><p>Командные ассоциации — найдите слово</p></button>
+      <button class="tile" id="btn100"><h3>100 к 1</h3><p>Популярные ответы на необычные вопросы</p></button>
+      <button class="tile" id="btnAuction" style="grid-column:1/-1"><h3>Аукцион</h3><p>Ставь баллы — забирай призы</p></button>
     </div>
 
-    <div class="foot">Работает внутри Telegram Mini App</div>
+    <div class="foot">
+      Работает внутри Telegram Mini App
+      <!-- скрытая тестовая кнопка -->
+      <button id="resetIntro" class="ghost tiny" style="display:none;margin-left:8px">Сбросить интро</button>
+    </div>
   </section>
 </div>
 
@@ -194,7 +121,7 @@
   const EVENT_SLUG = 'pr-demo';
   const tg = window.Telegram?.WebApp; tg?.expand?.();
 
-  // применим тему Telegram (если тёмная/светлая)
+  // применим тему Telegram, если задана
   try{
     const tp = tg?.themeParams || {};
     const pick = (k, fb) => (tp[k] ? (tp[k].startsWith('#') ? tp[k] : '#'+tp[k]) : fb);
@@ -207,11 +134,7 @@
 
   // ----------------- helpers -----------------
   async function post(path, data){
-    const r = await fetch(`/api/${path}.js`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(data || {})
-    });
+    const r = await fetch(`/api/${path}.js`,{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data || {}) });
     if(!r.ok) throw new Error(path+' '+r.status);
     return r.json();
   }
@@ -221,13 +144,21 @@
     if(!r.ok) throw new Error(path+' '+r.status);
     return r.json();
   }
-  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 
   // ----------------- intro -----------------
   const INTRO_KEY = 'pr_seen_intro_v1';
+  // Параметр ?intro=reset и ?debug=1
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get('intro') === 'reset') localStorage.removeItem(INTRO_KEY);
+    if (q.get('debug') === '1') document.getElementById('resetIntro').style.display = 'inline-flex';
+  } catch {}
+
   const $intro = document.getElementById('intro');
   const $introStart = document.getElementById('introStart');
   const $introLater = document.getElementById('introLater');
+  const $resetIntro = document.getElementById('resetIntro');
+
   function showIntroIfNeeded(){
     if(!localStorage.getItem(INTRO_KEY)){
       $intro.style.display='flex';
@@ -235,6 +166,26 @@
   }
   $introStart.onclick = ()=>{ localStorage.setItem(INTRO_KEY,'1'); $intro.style.display='none'; tg?.HapticFeedback?.impactOccurred('medium'); };
   $introLater.onclick = ()=>{ $intro.style.display='none'; };
+  $resetIntro.onclick = ()=>{
+    localStorage.removeItem(INTRO_KEY);
+    $intro.style.display='flex';
+    tg?.HapticFeedback?.notificationOccurred?.('success');
+  };
+
+  // Скрытый жест: 5 быстрых тапов по логотипу — показать кнопку ресета
+  (function(){
+    const el = document.getElementById('brandTap');
+    let taps=0, timer;
+    el?.addEventListener('click', ()=>{
+      clearTimeout(timer);
+      taps++;
+      timer = setTimeout(()=>taps=0, 800);
+      if (taps>=5) {
+        document.getElementById('resetIntro').style.display = 'inline-flex';
+        tg?.HapticFeedback?.impactOccurred?.('light');
+      }
+    });
+  })();
 
   // ----------------- user / join -----------------
   const user = tg?.initDataUnsafe?.user;
@@ -250,8 +201,7 @@
     avaEl.innerHTML='';
     if(photo_url){
       const img = new Image();
-      img.src = photo_url;
-      img.alt = 'avatar';
+      img.src = photo_url; img.alt = 'avatar';
       img.onload = ()=> avaEl.appendChild(img);
       img.onerror = ()=> avaEl.innerHTML = '<span>🙂</span>';
     } else if(emoji){
@@ -263,29 +213,17 @@
 
   async function ensureJoined(){
     if(!user) return;
-    // 1) регистрация пользователя
-    await post('register', {
-      tg_id: user.id,
-      username: user.username,
-      display_name: user.first_name
-    }).catch(()=>{});
-
-    // 2) участник события
+    await post('register', { tg_id:user.id, username:user.username, display_name:user.first_name }).catch(()=>{});
     const me = await get('event/me', { tg_id:user.id, event_slug:EVENT_SLUG }).catch(()=>null);
     if(me?.registered){
-      balance.textContent = 'Баланс: '+ me.participant.score;
+      balance.textContent = 'Баланс: ' + me.participant.score;
       setAva({ photo_url: user.photo_url || null, emoji: me.participant.avatar_url || '🙂' });
       ustatus.textContent = 'Участник события';
       return;
     }
-    // если нет — присоединяем
     const avatars = ['🐻','🦊','🐱','🦉','🐼','🦁','🐯','🐨','🦄','🐵'];
     const avatar = avatars[Math.floor(Math.random()*avatars.length)];
-    await post('event/join', {
-      tg_id:user.id, username:user.username,
-      display_name:user.first_name, avatar_url:avatar,
-      event_slug:EVENT_SLUG
-    }).catch(()=>{});
+    await post('event/join', { tg_id:user.id, username:user.username, display_name:user.first_name, avatar_url:avatar, event_slug:EVENT_SLUG }).catch(()=>{});
     const again = await get('event/me', { tg_id:user.id, event_slug:EVENT_SLUG }).catch(()=>null);
     if(again?.participant){
       balance.textContent = 'Баланс: ' + again.participant.score;
@@ -295,9 +233,7 @@
   }
 
   // поддерживаем онлайн-пульс
-  if(user){
-    setInterval(()=> post('ping', { tg_id:user.id }).catch(()=>{}), 10000);
-  }
+  if(user){ setInterval(()=> post('ping', { tg_id:user.id }).catch(()=>{}), 10000); }
 
   // ----------------- state poll -----------------
   const phaseText = document.getElementById('phaseText');
@@ -309,10 +245,7 @@
   const btn100     = document.getElementById('btn100');
   const btnAuction = document.getElementById('btnAuction');
 
-  function setEnabled(el, on){
-    el.classList.toggle('disabled', !on);
-    el.disabled = !on;
-  }
+  function setEnabled(el, on){ el.classList.toggle('disabled', !on); el.disabled = !on; }
 
   async function pollState(){
     try{
@@ -320,30 +253,29 @@
       const st = s.state || {};
       phaseText.textContent = st.phase || 'lobby';
       upd.textContent = 'Обновлено: ' + (st.updated_at ? new Date(st.updated_at).toLocaleTimeString() : '—');
-
       setEnabled(btnQuiz,     !!st.quiz_open);
       setEnabled(btnLogic,    !!st.logic_open);
       setEnabled(btnContact,  !!st.contact_open);
       setEnabled(btn100,      !!st.onehundred_open);
       setEnabled(btnAuction,  !!st.auction_open);
-    }catch(e){
-      // тихо
-    }
+    }catch{}
   }
 
-  // ----------------- clicks -----------------
-  btnQuiz.onclick    = ()=> { if(btnQuiz.disabled) return; tg?.showAlert?.('Квиз: скоро покажем экран вопросов.'); tg?.HapticFeedback?.impactOccurred('light'); };
+  // клики (пока заглушки)
+  btnQuiz.onclick    = ()=> { if(btnQuiz.disabled) return; tg?.showAlert?.('Квиз: скоро экран вопросов.'); tg?.HapticFeedback?.impactOccurred('light'); };
   btnLogic.onclick   = ()=> { if(btnLogic.disabled) return; tg?.showAlert?.('Где логика? — скоро.'); };
   btnContact.onclick = ()=> { if(btnContact.disabled) return; tg?.showAlert?.('Есть контакт! — скоро.'); };
   btn100.onclick     = ()=> { if(btn100.disabled) return; tg?.showAlert?.('100 к 1 — скоро.'); };
   btnAuction.onclick = ()=> { if(btnAuction.disabled) return; tg?.showAlert?.('Аукцион — скоро.'); };
 
-  // ----------------- boot -----------------
+  // boot
   (async ()=>{
-    showIntroIfNeeded();
+    // показать кнопку ресета, если ?debug=1 уже применён выше
+    // и/или показываем интро при отсутствии ключа
     if(user) await ensureJoined();
-    await pollState();
+    if(!localStorage.getItem(INTRO_KEY)) { document.getElementById('intro').style.display='flex'; }
     setInterval(pollState, 3000);
+    pollState();
   })();
 </script>
 </body>
