@@ -1,5 +1,4 @@
-// /api/event/state.js
-import { pool } from "../db.js";
+import { pool } from "../../lib/db.js";
 
 export default async function handler(req, res) {
   try {

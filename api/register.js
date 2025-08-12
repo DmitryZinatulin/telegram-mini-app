@@ -1,5 +1,5 @@
-import { pool } from "./db.js";
-import { readBody } from "./_utils.js";
+import { pool } from "../lib/db.js";
+import { readBody } from "../lib/_utils.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
