@@ -431,6 +431,16 @@
           .querySelectorAll("section")
           .forEach((s) => (s.style.display = s.id === name ? "block" : "none"));
         localStorage.setItem("adm_tab", name);
+
+        // Подгрузки по месту
+        if (name === "dash") dashLoad();
+        if (name === "state") stateRefresh();
+        if (name === "board") boardLoad();
+        if (name === "people") pLoad();
+        if (name === "quiz") {
+          loadRounds();
+          if (draft.round_id) loadQuestions();
+        }
       }
       tabs.forEach((t) => (t.onclick = () => showTab(t.dataset.tab)));
       showTab(localStorage.getItem("adm_tab") || "dash");
@@ -598,7 +608,8 @@
         const j = await getJSON(
           `/api/quiz.js?action=admin_rounds&event_slug=${encodeURIComponent(
             EVENT()
-          )}`
+          )}`,
+          { "x-admin-token": TOKEN() }
         );
         $("#qRounds").innerHTML =
           (j.rounds || [])
@@ -632,7 +643,8 @@
         const j = await getJSON(
           `/api/quiz.js?action=admin_questions&event_slug=${encodeURIComponent(
             EVENT()
-          )}&round_id=${draft.round_id}`
+          )}&round_id=${draft.round_id}`,
+          { "x-admin-token": TOKEN() }
         );
         $("#qList").innerHTML =
           (j.questions || [])
