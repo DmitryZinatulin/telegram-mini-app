@@ -77,79 +77,119 @@
   </div>
 
   <script>
-    const $ = (s)=>document.querySelector(s);
-    const statusEl = $('#status');
-    const infoEl = $('#info');
-    const phaseSel = $('#phase');
+  const $ = (s)=>document.querySelector(s);
+  const statusEl = $('#status');
+  const infoEl = $('#info');
+  const phaseSel = $('#phase');
 
-    async function getState(){
-      const slug = $('#slug').value.trim() || 'pr-demo';
-      const r = await fetch(`/api/event/state.js?event_slug=${encodeURIComponent(slug)}`);
-      if(!r.ok){ throw new Error('state ' + r.status); }
-      return r.json();
+  let refreshTimer = null;
+  let isSaving = false;
+  let lastEditTs = 0;
+  let refreshVersion = 0;
+
+  function startAutoRefresh(){
+    stopAutoRefresh();
+    refreshTimer = setInterval(() => {
+      // не мешаемся во время ручного редактирования
+      if (Date.now() - lastEditTs > 1500 && !isSaving) refresh();
+    }, 2000);
+  }
+  function stopAutoRefresh(){
+    if (refreshTimer) clearInterval(refreshTimer), (refreshTimer=null);
+  }
+
+  async function getState(){
+    const slug = $('#slug').value.trim() || 'pr-demo';
+    const r = await fetch(`/api/event/state.js?event_slug=${encodeURIComponent(slug)}`);
+    if(!r.ok) throw new Error('state ' + r.status);
+    return r.json();
+  }
+
+  async function setStatePatch(patch){
+    const slug = $('#slug').value.trim() || 'pr-demo';
+    const token = $('#token').value.trim();
+    const r = await fetch('/api/admin/state_set.js', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-admin-token':token},
+      body: JSON.stringify({ event_slug: slug, patch })
+    });
+    if(!r.ok) throw new Error('set ' + r.status);
+    return r.json();
+  }
+
+  async function refresh(){
+    const myVer = ++refreshVersion;     // версия запроса
+    try{
+      const d = await getState();
+      if (myVer !== refreshVersion) return; // устаревший ответ — игнор
+
+      const st = d.state;
+      phaseSel.value = st.phase;
+      $('#f_quiz').checked     = !!st.quiz_open;
+      $('#f_logic').checked    = !!st.logic_open;
+      $('#f_contact').checked  = !!st.contact_open;
+      $('#f_100').checked      = !!st.onehundred_open;
+      $('#f_auction').checked  = !!st.auction_open;
+      infoEl.textContent = `updated_at: ${st.updated_at}`;
+      statusEl.textContent = 'OK';
+    }catch(e){
+      console.log(e);
+      statusEl.textContent = 'Ошибка загрузки';
     }
+  }
 
-    async function setStatePatch(patch){
-      const slug = $('#slug').value.trim() || 'pr-demo';
-      const token = $('#token').value.trim();
-      const r = await fetch('/api/admin/state_set.js', {
-        method:'POST',
-        headers:{'Content-Type':'application/json', 'x-admin-token': token},
-        body: JSON.stringify({ event_slug: slug, patch })
-      });
-      if(!r.ok){ throw new Error('set ' + r.status); }
-      return r.json();
+  // Помечаем, что пользователь редактирует — временно стопаем авто-обновление
+  ['#f_quiz','#f_logic','#f_contact','#f_100','#f_auction','#phase'].forEach(sel=>{
+    $(sel).addEventListener('input', ()=>{
+      lastEditTs = Date.now();
+      statusEl.textContent = 'Изменено (не сохранено)';
+    });
+  });
+
+  // Кнопки
+  $('#btnRefresh').onclick = async ()=>{
+    lastEditTs = 0;
+    await refresh();
+  };
+
+  $('#btnApplyPhase').onclick = async ()=>{
+    try{
+      isSaving = true; stopAutoRefresh();
+      const { state } = await setStatePatch({ phase: phaseSel.value });
+      statusEl.textContent = `Фаза: ${state.phase} ✓`;
+      lastEditTs = 0;
+      await refresh();
+    }catch(e){
+      statusEl.textContent = 'Ошибка сохранения фазы';
+    }finally{
+      isSaving = false; startAutoRefresh();
     }
+  };
 
-    async function refresh(){
-      try{
-        const d = await getState();
-        const st = d.state;
-        phaseSel.value = st.phase;
-        $('#f_quiz').checked     = !!st.quiz_open;
-        $('#f_logic').checked    = !!st.logic_open;
-        $('#f_contact').checked  = !!st.contact_open;
-        $('#f_100').checked      = !!st.onehundred_open;
-        $('#f_auction').checked  = !!st.auction_open;
-        infoEl.textContent = `updated_at: ${st.updated_at}`;
-        statusEl.textContent = 'OK';
-      }catch(e){
-        console.log(e);
-        statusEl.textContent = 'Ошибка загрузки';
-      }
+  $('#btnApplyFlags').onclick = async ()=>{
+    try{
+      isSaving = true; stopAutoRefresh();
+      const patch = {
+        quiz_open:       $('#f_quiz').checked,
+        logic_open:      $('#f_logic').checked,
+        contact_open:    $('#f_contact').checked,
+        onehundred_open: $('#f_100').checked,
+        auction_open:    $('#f_auction').checked
+      };
+      await setStatePatch(patch);
+      statusEl.textContent = 'Флаги сохранены ✓';
+      lastEditTs = 0;
+      await refresh();
+    }catch(e){
+      statusEl.textContent = 'Ошибка сохранения флагов';
+    }finally{
+      isSaving = false; startAutoRefresh();
     }
+  };
 
-    $('#btnRefresh').onclick = refresh;
-
-    $('#btnApplyPhase').onclick = async ()=>{
-      try{
-        const { state } = await setStatePatch({ phase: phaseSel.value });
-        statusEl.textContent = `Фаза: ${state.phase} ✓`;
-      }catch(e){
-        statusEl.textContent = 'Ошибка сохранения фазы';
-      }
-    };
-
-    $('#btnApplyFlags').onclick = async ()=>{
-      try{
-        const patch = {
-          quiz_open:       $('#f_quiz').checked,
-          logic_open:      $('#f_logic').checked,
-          contact_open:    $('#f_contact').checked,
-          onehundred_open: $('#f_100').checked,
-          auction_open:    $('#f_auction').checked
-        };
-        const { state } = await setStatePatch(patch);
-        statusEl.textContent = 'Флаги сохранены ✓';
-        phaseSel.value = state.phase;
-      }catch(e){
-        statusEl.textContent = 'Ошибка сохранения флагов';
-      }
-    };
-
-    // авто-обновление
-    refresh();
-    setInterval(refresh, 2000);
-  </script>
-</body>
-</html>
+  // Старт
+  (async ()=>{
+    await refresh();
+    startAutoRefresh();
+  })();
+</script>
