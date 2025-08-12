@@ -1,3 +1,4 @@
+// /api/event/stats.js
 import { pool } from "../../lib/db.js";
 
 export default async function handler(req, res) {
@@ -8,31 +9,30 @@ export default async function handler(req, res) {
     if (!ev.rowCount) return res.status(404).json({ error: "event_not_found" });
     const eventId = ev.rows[0].id;
 
-    const total = await pool.query(
-      "select count(*)::int as c from participants where event_id=$1",
-      [eventId]
+    const totalQ = await pool.query(
+      `select count(*)::int as c from participants where event_id=$1`, [eventId]
     );
-    const online = await pool.query(
-      `select count(*)::int as c
+    const onlineQ = await pool.query(
+      `select count(distinct p.user_id)::int as c
          from participants p
          join sessions s on s.user_id = p.user_id
         where p.event_id=$1 and s.last_ping > now() - interval '30 seconds'`,
       [eventId]
     );
-    const lead = await pool.query(
+    const topQ = await pool.query(
       `select display_name, score
          from participants
         where event_id=$1
-        order by score desc, id asc
+        order by score desc, created_at asc
         limit 10`,
       [eventId]
     );
 
     res.json({
       event_slug,
-      total: total.rows[0].c,
-      online: online.rows[0].c,
-      leaderboard: lead.rows,
+      total_registered: totalQ.rows[0].c,
+      online: onlineQ.rows[0].c,
+      top: topQ.rows
     });
   } catch (e) {
     console.error("event/stats error:", e);
