@@ -7,37 +7,20 @@
   <meta name="theme-color" content="#0a84ff" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    :root{
-      --bg:#f6f6f9; --card:#ffffff; --text:#111; --muted:#666; --accent:#0a84ff;
-    }
+    :root{ --bg:#f6f6f9; --card:#ffffff; --text:#111; --muted:#666; --accent:#0a84ff; }
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
     body{background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
     .wrap{width:100%;max-width:520px}
-    .brand{
-      display:flex;align-items:center;gap:10px;margin:0 auto 16px auto;justify-content:center;opacity:.9;
-    }
-    .brand .logo{width:36px;height:36px;border-radius:10px;background:var(--accent);filter:saturate(.85);box-shadow:0 6px 16px rgba(0,0,0,.12)}
+    .brand{display:flex;align-items:center;gap:10px;margin:0 auto 16px;justify-content:center;opacity:.9}
+    .brand .logo{width:36px;height:36px;border-radius:10px;background:var(--accent);box-shadow:0 6px 16px rgba(0,0,0,.12)}
     .brand .name{font-weight:700;letter-spacing:.4px;color:var(--text)}
-    .card{
-      background:var(--card);
-      border-radius:20px;
-      box-shadow:0 12px 36px rgba(0,0,0,.10);
-      padding:28px 22px;
-      text-align:center;
-    }
+    .card{background:var(--card);border-radius:20px;box-shadow:0 12px 36px rgba(0,0,0,.10);padding:28px 22px;text-align:center}
     .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
     h1{margin:0 0 8px;font-size:24px;color:var(--text)}
     .sub{margin:0 auto 18px;max-width:34ch;line-height:1.45;color:var(--muted)}
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 12px;border-radius:999px;background:#00000008;color:var(--muted);font-size:13px;margin-bottom:14px;
-    }
-    .btn{
-      width:100%;padding:14px 16px;border:0;border-radius:14px;
-      background:var(--accent);color:#fff;font-weight:600;font-size:16px;cursor:pointer;
-      box-shadow:0 10px 20px rgba(10,132,255,.25);transition:transform .06s ease;
-    }
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#00000008;color:var(--muted);font-size:13px;margin-bottom:14px}
+    .btn{width:100%;padding:14px 16px;border:0;border-radius:14px;background:var(--accent);color:#fff;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 10px 20px rgba(10,132,255,.25);transition:transform .06s ease}
     .btn:active{transform:translateY(1px)}
     .footer{margin-top:14px;font-size:12px;color:var(--muted)}
   </style>
@@ -53,74 +36,52 @@
       <p class="eyebrow">Добро пожаловать</p>
       <h1 id="title">Привет, гость!</h1>
       <p class="sub">Это мини-приложение для интерактивов конференции: квизы, голосования, аукцион призов.</p>
-
       <div class="pill" id="sessionHint">Инициализация…</div>
-
       <button class="btn" id="startBtn">Начать</button>
       <div class="footer">Работает внутри Telegram Mini App</div>
     </div>
   </div>
 
   <script>
-    // === Инициализация Telegram WebApp и тема ===
-    const tg = window.Telegram?.WebApp;
-    tg?.expand();
-
-    const tp = (tg && tg.themeParams) || {};
+    // Telegram API + тема
+    const tg = window.Telegram?.WebApp; tg?.expand();
+    const tp = tg?.themeParams || {};
     const pick = (k, fb) => (tp[k] ? (tp[k].startsWith('#') ? tp[k] : '#'+tp[k]) : fb);
-
     document.documentElement.style.setProperty('--bg',     pick('bg_color',       getComputedStyle(document.documentElement).getPropertyValue('--bg')));
     document.documentElement.style.setProperty('--card',   pick('secondary_bg_color', '#ffffff'));
-    document.documentElement.style.setProperty('--text',   pick('text_color',     '#111111'));
-    document.documentElement.style.setProperty('--muted',  pick('hint_color',     '#666666'));
+    document.documentElement.style.setProperty('--text',   pick('text_color',     '#111'));
+    document.documentElement.style.setProperty('--muted',  pick('hint_color',     '#666'));
     document.documentElement.style.setProperty('--accent', pick('button_color',   '#0a84ff'));
 
-    // === Приветствие и статус ===
+    // приветствие
     const user = tg?.initDataUnsafe?.user;
-    const titleEl = document.getElementById('title');
-    const hintEl  = document.getElementById('sessionHint');
+    title.textContent = user ? `Привет, ${user.first_name}!` : 'Привет, гость!';
+    sessionHint.textContent = user ? `ID ${user.id} • готово` : 'Открой через Telegram';
 
-    if (user) {
-      titleEl.textContent = `Привет, ${user.first_name}!`;
-      hintEl.textContent  = `ID ${user.id} • готово`;
-    } else {
-      titleEl.textContent = 'Привет, гость!';
-      hintEl.textContent  = 'Открой через Telegram для полного функционала';
-    }
-
-    // === Кнопка "Начать" ===
-    document.getElementById('startBtn').addEventListener('click', () => {
-      try { tg?.HapticFeedback?.impactOccurred('medium'); } catch(e){}
-      tg?.showAlert?.('Это заглушка. Дальше будет: выбор игры → регистрация раунда → начисление баллов.');
-      // TODO: тут позже роут на следующий экран
+    // кнопка
+    startBtn.addEventListener('click', () => {
+      try { tg?.HapticFeedback?.impactOccurred('medium'); } catch{}
+      tg?.showAlert?.('Это заглушка. Дальше будет выбор игры → регистрация → баллы.');
     });
 
-    // === Вспомогательный вызов API ===
+    // API helper (внимание: пути c .js)
     async function call(path, data){
       try {
-        await fetch(`/api/${path}`, {
+        const r = await fetch(`/api/${path}.js`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type':'application/json' },
           body: JSON.stringify(data || {})
         });
-      } catch (e) {
-        console.log('API error:', e);
-      }
+        console.log(path, r.status);
+      } catch (e) { console.log('api error', path, e); }
     }
 
-    // === Регистрация + пинг онлайна (только внутри Telegram) ===
+    // регистрация + пульс онлайна
     if (user) {
-      call('register', {
-        tg_id: user.id,
-        username: user.username,
-        display_name: user.first_name
-      });
-
-      setInterval(() => {
-        call('ping', { tg_id: user.id });
-      }, 10000);
+      call('register', { tg_id:user.id, username:user.username, display_name:user.first_name });
+      setInterval(() => call('ping', { tg_id:user.id }), 10000);
     } else {
-      console.log('Запущено вне Telegram: register/ping не выполняются');
+      console.log('Not in Telegram WebApp: user undefined');
     }
   </script>
 </body>

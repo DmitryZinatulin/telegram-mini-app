@@ -1,15 +1,44 @@
-<!doctype html><meta charset="utf-8">
+<!doctype html>
+<meta charset="utf-8">
 <title>Admin</title>
-<style>body{font-family:system-ui;padding:20px}</style>
-<h1>Admin</h1>
-<div id="box">Загрузка…</div>
+<style>
+  body{font-family:system-ui,Arial;margin:0;padding:24px;background:#0b1220;color:#e7eaf1}
+  .grid{display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:16px;margin-bottom:20px}
+  .card{background:#121a2a;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  .title{font-size:14px;color:#9aa4b2;margin:0 0 8px}
+  .num{font-size:28px;font-weight:700;margin:0}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:10px 8px;border-bottom:1px solid #1f2a44}
+  th{color:#9aa4b2;text-align:left;font-weight:600}
+</style>
+<h1 style="margin:0 0 16px">Admin</h1>
+
+<div class="grid">
+  <div class="card"><p class="title">Онлайн</p><p class="num" id="online">—</p></div>
+  <div class="card"><p class="title">Всего участников</p><p class="num" id="total">—</p></div>
+  <div class="card"><p class="title">Обновлено</p><p class="num" id="updated">—</p></div>
+</div>
+
+<div class="card">
+  <p class="title">Лидерборд (топ-10)</p>
+  <table>
+    <thead><tr><th>#</th><th>Имя</th><th>Баллы</th></tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
 <script>
 async function load(){
-  const res = await fetch('/api/stats');
-  const s = await res.json();
-  document.getElementById('box').innerHTML =
-    `Онлайн: <b>${s.online}</b><br>Всего: <b>${s.total}</b><br><br>` +
-    `<ol>` + s.leaderboard.map(r=>`<li>${r.display_name || 'Без имени'} — ${r.score}</li>`).join('') + `</ol>`;
+  const r = await fetch('/api/stats.js'); // ВАЖНО: .js
+  const s = await r.json();
+  online.textContent  = s.online;
+  total.textContent   = s.total;
+  updated.textContent = new Date().toLocaleTimeString();
+
+  tbody.innerHTML = s.leaderboard.map((row, i) =>
+    `<tr><td>${i+1}</td><td>${row.display_name || 'Без имени'}</td><td>${row.score}</td></tr>`
+  ).join('');
 }
-load(); setInterval(load, 2000);
+load();
+setInterval(load, 2000);
 </script>
