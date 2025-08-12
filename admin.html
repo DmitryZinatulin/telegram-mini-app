@@ -247,6 +247,69 @@
       </div>
     </div>
 
+    <hr class="mt16" style="border-color: #1e2840; opacity: 0.6" />
+
+    <strong class="mt12">Квиз (управление)</strong>
+    <div class="mt8">
+      <div class="muted">JSON вопросов (пример ниже)</div>
+      <textarea
+        id="quizJson"
+        style="
+          width: 100%;
+          height: 140px;
+          background: #0b1323;
+          border: 1px solid #223154;
+          border-radius: 10px;
+          color: #e9eefc;
+          padding: 8px;
+        "
+      ></textarea>
+      <div class="muted mt8">
+        Пример:
+        <pre
+          style="
+            white-space: pre-wrap;
+            background: #0b1323;
+            border: 1px solid #223154;
+            border-radius: 10px;
+            padding: 8px;
+            margin: 6px 0 0 0;
+            color: #a7b3cf;
+          "
+        >
+{
+  "title": "Раунд 1",
+  "questions": [
+    {"text":"Столица Франции?","options":["Париж","Берлин","Рим","Мадрид"],"correct_index":0},
+    {"text":"2+2=?","options":["3","4","5"],"correct_index":1}
+  ]
+}
+</pre
+        >
+      </div>
+    </div>
+
+    <div class="row mt12">
+      <button class="btn ghost" id="btnQuizImport">Импортировать</button>
+      <input
+        id="quizRoundId"
+        type="text"
+        placeholder="round_id"
+        style="
+          width: 140px;
+          background: #0b1323;
+          border: 1px solid #223154;
+          color: #e9eefc;
+          border-radius: 10px;
+          padding: 8px;
+        "
+      />
+      <button class="btn" id="btnQuizStart">Старт раунда</button>
+      <button class="btn secondary" id="btnQuizNext">Следующий</button>
+      <button class="btn secondary" id="btnQuizReveal">Начислить (+10)</button>
+      <span id="quizInfo" class="muted">—</span>
+    </div>
+
     <script>
       const $ = (s) => document.querySelector(s);
       const statusDot = $("#statusDot");
@@ -364,6 +427,64 @@
         const j = await r.json();
         alert(j.ok ? "Сброшено: " + j.reset : "Ошибка");
       }
+
+      async function quizCall(action, payload) {
+        const slug = document.getElementById("slug").value || "pr-demo";
+        const token = document.getElementById("token").value || "";
+        const r = await fetch(
+          "/api/quiz.js?action=" +
+            action +
+            "&event_slug=" +
+            encodeURIComponent(slug),
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-admin-token": token,
+            },
+            body: JSON.stringify(payload || {}),
+          }
+        );
+        return r.json();
+      }
+
+      document.getElementById("btnQuizImport").onclick = async () => {
+        try {
+          const data = JSON.parse(
+            document.getElementById("quizJson").value || "{}"
+          );
+          const j = await quizCall("admin_import", data);
+          document.getElementById("quizRoundId").value = j.round_id || "";
+          document.getElementById("quizInfo").textContent = j.ok
+            ? "Импорт: " + j.count
+            : "Ошибка импорта";
+        } catch (e) {
+          document.getElementById("quizInfo").textContent = "Неверный JSON";
+        }
+      };
+
+      document.getElementById("btnQuizStart").onclick = async () => {
+        const id = document.getElementById("quizRoundId").value;
+        if (!id) return alert("round_id пуст");
+        const j = await quizCall("admin_start", { round_id: Number(id) });
+        document.getElementById("quizInfo").textContent = j.ok
+          ? "Раунд открыт"
+          : "Ошибка старта";
+      };
+
+      document.getElementById("btnQuizNext").onclick = async () => {
+        const j = await quizCall("admin_next", {});
+        document.getElementById("quizInfo").textContent = j.ok
+          ? "Следующий вопрос"
+          : "Ошибка next";
+      };
+
+      document.getElementById("btnQuizReveal").onclick = async () => {
+        const j = await quizCall("admin_reveal", {});
+        document.getElementById("quizInfo").textContent = j.ok
+          ? "Начислено: " + (j.awarded || 0)
+          : "Ошибка reveal";
+      };
       // init
       refreshStatus();
       startAutoStatus();
