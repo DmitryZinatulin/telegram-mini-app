@@ -565,7 +565,9 @@
         };
         try {
           await postJSON(
-            `/api/admin/state_set.js?event_slug=${encodeURIComponent(EVENT())}`,
+            `/api/admin.js?action=state_set&event_slug=${encodeURIComponent(
+              EVENT()
+            )}`,
             patch,
             { "x-admin-token": TOKEN() }
           );
@@ -854,13 +856,11 @@
         );
         const q = $("#pSearch").value.trim();
         const j = await getJSON(
-          `/api/participants.js?action=list&event_slug=${encodeURIComponent(
+          `/api/admin.js?action=participants_list&event_slug=${encodeURIComponent(
             EVENT()
-          )}` +
-            `&sort=${encodeURIComponent(sortKey)}&order=${encodeURIComponent(
-              sortDir
-            )}` +
-            (q ? `&q=${encodeURIComponent(q)}` : ``)
+          )}&sort=${sort}&order=${order}&q=${encodeURIComponent(
+            q || ""
+          )}&limit=${limit}&offset=${offset}`
         );
         $("#pInfo").textContent = `Всего: ${j.total}`;
         $("#pList").innerHTML =
