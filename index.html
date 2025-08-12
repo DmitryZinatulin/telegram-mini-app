@@ -137,8 +137,15 @@
       }catch(e){ console.log(e); }
     }
 
-    // клики (пока алерты)
-    btnQuiz.onclick    = ()=> tg?.showAlert?.('Стартуем квиз (скоро экраны)');
+    // клики
+    btnQuiz.onclick = async () => {
+      try {
+        const resp = await post('quiz', { tg_id: user?.id || null });
+        tg?.showAlert?.(resp.message || 'Ок');
+      } catch (e) {
+        tg?.showAlert?.('Ошибка связи с сервером');
+      }
+    };
     btnLogic.onclick   = ()=> tg?.showAlert?.('Где логика? (скоро)');
     btnContact.onclick = ()=> tg?.showAlert?.('Есть контакт! (скоро)');
     btn100.onclick     = ()=> tg?.showAlert?.('100 к 1 (скоро)');
