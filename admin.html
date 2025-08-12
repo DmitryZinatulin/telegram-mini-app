@@ -1,207 +1,372 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
-<head>
-<meta charset="utf-8">
-<title>Admin • Pernod Ricard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-  :root{ --bg:#0b1020; --card:#121a2a; --text:#e9eefc; --muted:#96a0b8; --accent:#4c8dff; --ok:#39d98a; --err:#ff6b6b; }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial}
-  .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
-  h1{font-size:18px;margin:0 0 16px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .card{background:var(--card);border:1px solid #1e2840;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:16px}
-  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .kv{display:grid;grid-template-columns:140px 1fr;gap:8px;align-items:center;width:100%}
-  input[type="text"], select{
-    background:#0b1323;border:1px solid #223154;color:var(--text);
-    padding:8px 10px;border-radius:10px;outline:none;width:100%;
-  }
-  .btn{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
-  .btn.secondary{background:#24365d}
-  .btn.ghost{background:transparent;border:1px solid #223154}
-  .muted{color:var(--muted)}
-  .switch{display:flex;align-items:center;gap:8px}
-  .switch input{transform:scale(1.2)}
-  .cols2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  .status-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#7381a3;margin-right:6px}
-  .status-ok{background:var(--ok)}
-  .status-err{background:var(--err)}
-  .pill{display:inline-flex;align-items:center;gap:8px;background:#0b1323;border:1px solid #223154;border-radius:999px;padding:6px 10px}
-  .mt8{margin-top:8px} .mt12{margin-top:12px} .mt16{margin-top:16px}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>Админка события</h1>
-
-  <div class="row kv" style="margin-bottom:12px">
-    <div class="muted">Event slug</div>
-    <input id="slug" type="text" value="pr-demo">
-    <div class="muted">Admin token</div>
-    <input id="token" type="text" placeholder="вставь ADMIN_TOKEN">
-  </div>
-
-  <div class="grid">
-    <!-- ЛЕВАЯ ПАНЕЛЬ: СТАТУС (read-only) -->
-    <div class="card">
-      <div class="row">
-        <span id="statusDot" class="status-dot"></span>
-        <strong>Статус конференции</strong>
-        <span class="pill" id="updated">—</span>
+  <head>
+    <meta charset="utf-8" />
+    <title>Admin • Pernod Ricard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --bg: #0b1020;
+        --card: #121a2a;
+        --text: #e9eefc;
+        --muted: #96a0b8;
+        --accent: #4c8dff;
+        --ok: #39d98a;
+        --err: #ff6b6b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0 0 16px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid #1e2840;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        padding: 16px;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .kv {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+      }
+      input[type="text"],
+      select {
+        background: #0b1323;
+        border: 1px solid #223154;
+        color: var(--text);
+        padding: 8px 10px;
+        border-radius: 10px;
+        outline: none;
+        width: 100%;
+      }
+      .btn {
+        background: var(--accent);
+        color: #fff;
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn.secondary {
+        background: #24365d;
+      }
+      .btn.ghost {
+        background: transparent;
+        border: 1px solid #223154;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .switch {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .switch input {
+        transform: scale(1.2);
+      }
+      .cols2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .status-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #7381a3;
+        margin-right: 6px;
+      }
+      .status-ok {
+        background: var(--ok);
+      }
+      .status-err {
+        background: var(--err);
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #0b1323;
+        border: 1px solid #223154;
+        border-radius: 999px;
+        padding: 6px 10px;
+      }
+      .mt8 {
+        margin-top: 8px;
+      }
+      .mt12 {
+        margin-top: 12px;
+      }
+      .mt16 {
+        margin-top: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Админка события</h1>
+      <button
+        class="btn secondary"
+        onclick="window.open('/hall.html?event='+encodeURIComponent(document.getElementById('slug').value||'pr-demo'),'_blank')"
+      >
+        Открыть экран зала
+      </button>
+      <button class="btn ghost" onclick="resetScores()">Обнулить баллы</button>
+      <div class="row kv" style="margin-bottom: 12px">
+        <div class="muted">Event slug</div>
+        <input id="slug" type="text" value="pr-demo" />
+        <div class="muted">Admin token</div>
+        <input id="token" type="text" placeholder="вставь ADMIN_TOKEN" />
       </div>
 
-      <div class="mt12 kv">
-        <div class="muted">Текущая фаза</div>
-        <div id="st_phase">—</div>
-      </div>
+      <div class="grid">
+        <!-- ЛЕВАЯ ПАНЕЛЬ: СТАТУС (read-only) -->
+        <div class="card">
+          <div class="row">
+            <span id="statusDot" class="status-dot"></span>
+            <strong>Статус конференции</strong>
+            <span class="pill" id="updated">—</span>
+          </div>
 
-      <div class="mt12 cols2">
-        <div class="switch"><input type="checkbox" id="st_quiz" disabled> <label for="st_quiz">Квиз</label></div>
-        <div class="switch"><input type="checkbox" id="st_logic" disabled> <label for="st_logic">Где логика?</label></div>
-        <div class="switch"><input type="checkbox" id="st_contact" disabled> <label for="st_contact">Есть контакт!</label></div>
-        <div class="switch"><input type="checkbox" id="st_100" disabled> <label for="st_100">100 к 1</label></div>
-        <div class="switch"><input type="checkbox" id="st_auction" disabled> <label for="st_auction">Аукцион</label></div>
-      </div>
+          <div class="mt12 kv">
+            <div class="muted">Текущая фаза</div>
+            <div id="st_phase">—</div>
+          </div>
 
-      <div class="row mt16">
-        <button class="btn secondary" id="btnRefreshStatus">Обновить статус</button>
-        <label class="switch"><input type="checkbox" id="autoStatus" checked> Авто-обновлять статус</label>
-        <span id="statusInfo" class="muted">—</span>
+          <div class="mt12 cols2">
+            <div class="switch">
+              <input type="checkbox" id="st_quiz" disabled />
+              <label for="st_quiz">Квиз</label>
+            </div>
+            <div class="switch">
+              <input type="checkbox" id="st_logic" disabled />
+              <label for="st_logic">Где логика?</label>
+            </div>
+            <div class="switch">
+              <input type="checkbox" id="st_contact" disabled />
+              <label for="st_contact">Есть контакт!</label>
+            </div>
+            <div class="switch">
+              <input type="checkbox" id="st_100" disabled />
+              <label for="st_100">100 к 1</label>
+            </div>
+            <div class="switch">
+              <input type="checkbox" id="st_auction" disabled />
+              <label for="st_auction">Аукцион</label>
+            </div>
+          </div>
+
+          <div class="row mt16">
+            <button class="btn secondary" id="btnRefreshStatus">
+              Обновить статус
+            </button>
+            <label class="switch"
+              ><input type="checkbox" id="autoStatus" checked /> Авто-обновлять
+              статус</label
+            >
+            <span id="statusInfo" class="muted">—</span>
+          </div>
+        </div>
+
+        <!-- ПРАВАЯ ПАНЕЛЬ: УПРАВЛЕНИЕ (форма, которую нигде не трогаем) -->
+        <div class="card">
+          <strong>Управление</strong>
+
+          <div class="mt12 kv">
+            <div class="muted">Фаза</div>
+            <select id="phase">
+              <option value="lobby">lobby</option>
+              <option value="quiz">quiz</option>
+              <option value="logic">logic</option>
+              <option value="contact">contact</option>
+              <option value="onehundred">onehundred</option>
+              <option value="auction">auction</option>
+            </select>
+          </div>
+
+          <div class="mt12 cols2">
+            <div class="switch">
+              <input id="f_quiz" type="checkbox" />
+              <label for="f_quiz">Квиз</label>
+            </div>
+            <div class="switch">
+              <input id="f_logic" type="checkbox" />
+              <label for="f_logic">Где логика?</label>
+            </div>
+            <div class="switch">
+              <input id="f_contact" type="checkbox" />
+              <label for="f_contact">Есть контакт!</label>
+            </div>
+            <div class="switch">
+              <input id="f_100" type="checkbox" />
+              <label for="f_100">100 к 1</label>
+            </div>
+            <div class="switch">
+              <input id="f_auction" type="checkbox" />
+              <label for="f_auction">Аукцион</label>
+            </div>
+          </div>
+
+          <div class="row mt16">
+            <button class="btn ghost" id="btnLoad">Загрузить из сервера</button>
+            <button class="btn" id="btnSave">Сохранить изменения</button>
+            <span id="saveInfo" class="muted">—</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- ПРАВАЯ ПАНЕЛЬ: УПРАВЛЕНИЕ (форма, которую нигде не трогаем) -->
-    <div class="card">
-      <strong>Управление</strong>
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const statusDot = $("#statusDot");
+      const updatedEl = $("#updated");
+      const statusInfo = $("#statusInfo");
+      let statusTimer = null;
 
-      <div class="mt12 kv">
-        <div class="muted">Фаза</div>
-        <select id="phase">
-          <option value="lobby">lobby</option>
-          <option value="quiz">quiz</option>
-          <option value="logic">logic</option>
-          <option value="contact">contact</option>
-          <option value="onehundred">onehundred</option>
-          <option value="auction">auction</option>
-        </select>
-      </div>
+      async function fetchState() {
+        const slug = $("#slug").value.trim() || "pr-demo";
+        const r = await fetch(
+          `/api/event/state.js?event_slug=${encodeURIComponent(slug)}`
+        );
+        if (!r.ok) throw new Error("state " + r.status);
+        return r.json();
+      }
 
-      <div class="mt12 cols2">
-        <div class="switch"><input id="f_quiz" type="checkbox"> <label for="f_quiz">Квиз</label></div>
-        <div class="switch"><input id="f_logic" type="checkbox"> <label for="f_logic">Где логика?</label></div>
-        <div class="switch"><input id="f_contact" type="checkbox"> <label for="f_contact">Есть контакт!</label></div>
-        <div class="switch"><input id="f_100" type="checkbox"> <label for="f_100">100 к 1</label></div>
-        <div class="switch"><input id="f_auction" type="checkbox"> <label for="f_auction">Аукцион</label></div>
-      </div>
+      async function setPatch(patch) {
+        const slug = $("#slug").value.trim() || "pr-demo";
+        const token = $("#token").value.trim();
+        const r = await fetch("/api/admin/state_set.js", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-token": token,
+          },
+          body: JSON.stringify({ event_slug: slug, patch }),
+        });
+        if (!r.ok) throw new Error("set " + r.status);
+        return r.json();
+      }
 
-      <div class="row mt16">
-        <button class="btn ghost" id="btnLoad">Загрузить из сервера</button>
-        <button class="btn" id="btnSave">Сохранить изменения</button>
-        <span id="saveInfo" class="muted">—</span>
-      </div>
-    </div>
-  </div>
-</div>
+      // ---- Статус (read-only) ----
+      async function refreshStatus() {
+        try {
+          const d = await fetchState();
+          const st = d.state;
+          $("#st_phase").textContent = st.phase;
+          $("#st_quiz").checked = !!st.quiz_open;
+          $("#st_logic").checked = !!st.logic_open;
+          $("#st_contact").checked = !!st.contact_open;
+          $("#st_100").checked = !!st.onehundred_open;
+          $("#st_auction").checked = !!st.auction_open;
+          updatedEl.textContent = `updated_at: ${st.updated_at}`;
+          statusDot.classList.remove("status-err");
+          statusDot.classList.add("status-ok");
+          statusInfo.textContent = "OK";
+        } catch (e) {
+          statusDot.classList.remove("status-ok");
+          statusDot.classList.add("status-err");
+          statusInfo.textContent = "Ошибка загрузки";
+          console.log(e);
+        }
+      }
+      $("#btnRefreshStatus").onclick = refreshStatus;
 
-<script>
-  const $ = (s)=>document.querySelector(s);
-  const statusDot = $('#statusDot');
-  const updatedEl = $('#updated');
-  const statusInfo = $('#statusInfo');
-  let statusTimer = null;
+      function startAutoStatus() {
+        stopAutoStatus();
+        statusTimer = setInterval(refreshStatus, 3000);
+      }
+      function stopAutoStatus() {
+        if (statusTimer) clearInterval(statusTimer), (statusTimer = null);
+      }
+      $("#autoStatus").onchange = (e) =>
+        e.target.checked ? startAutoStatus() : stopAutoStatus();
 
-  async function fetchState(){
-    const slug = $('#slug').value.trim() || 'pr-demo';
-    const r = await fetch(`/api/event/state.js?event_slug=${encodeURIComponent(slug)}`);
-    if(!r.ok) throw new Error('state ' + r.status);
-    return r.json();
-  }
+      // ---- Управление (форма) ----
+      $("#btnLoad").onclick = async () => {
+        try {
+          const d = await fetchState();
+          const st = d.state;
+          $("#phase").value = st.phase;
+          $("#f_quiz").checked = !!st.quiz_open;
+          $("#f_logic").checked = !!st.logic_open;
+          $("#f_contact").checked = !!st.contact_open;
+          $("#f_100").checked = !!st.onehundred_open;
+          $("#f_auction").checked = !!st.auction_open;
+          $("#saveInfo").textContent = "Загружено из сервера";
+        } catch (e) {
+          $("#saveInfo").textContent = "Ошибка загрузки";
+          console.log(e);
+        }
+      };
 
-  async function setPatch(patch){
-    const slug = $('#slug').value.trim() || 'pr-demo';
-    const token = $('#token').value.trim();
-    const r = await fetch('/api/admin/state_set.js', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-admin-token':token},
-      body: JSON.stringify({ event_slug: slug, patch })
-    });
-    if(!r.ok) throw new Error('set ' + r.status);
-    return r.json();
-  }
-
-  // ---- Статус (read-only) ----
-  async function refreshStatus(){
-    try{
-      const d = await fetchState(); const st = d.state;
-      $('#st_phase').textContent = st.phase;
-      $('#st_quiz').checked     = !!st.quiz_open;
-      $('#st_logic').checked    = !!st.logic_open;
-      $('#st_contact').checked  = !!st.contact_open;
-      $('#st_100').checked      = !!st.onehundred_open;
-      $('#st_auction').checked  = !!st.auction_open;
-      updatedEl.textContent = `updated_at: ${st.updated_at}`;
-      statusDot.classList.remove('status-err'); statusDot.classList.add('status-ok');
-      statusInfo.textContent = 'OK';
-    }catch(e){
-      statusDot.classList.remove('status-ok'); statusDot.classList.add('status-err');
-      statusInfo.textContent = 'Ошибка загрузки';
-      console.log(e);
-    }
-  }
-  $('#btnRefreshStatus').onclick = refreshStatus;
-
-  function startAutoStatus(){
-    stopAutoStatus();
-    statusTimer = setInterval(refreshStatus, 3000);
-  }
-  function stopAutoStatus(){
-    if (statusTimer) clearInterval(statusTimer), (statusTimer=null);
-  }
-  $('#autoStatus').onchange = (e)=> e.target.checked ? startAutoStatus() : stopAutoStatus();
-
-  // ---- Управление (форма) ----
-  $('#btnLoad').onclick = async ()=>{
-    try{
-      const d = await fetchState(); const st = d.state;
-      $('#phase').value = st.phase;
-      $('#f_quiz').checked     = !!st.quiz_open;
-      $('#f_logic').checked    = !!st.logic_open;
-      $('#f_contact').checked  = !!st.contact_open;
-      $('#f_100').checked      = !!st.onehundred_open;
-      $('#f_auction').checked  = !!st.auction_open;
-      $('#saveInfo').textContent = 'Загружено из сервера';
-    }catch(e){
-      $('#saveInfo').textContent = 'Ошибка загрузки';
-      console.log(e);
-    }
-  };
-
-  $('#btnSave').onclick = async ()=>{
-    const patch = {
-      phase: $('#phase').value,
-      quiz_open:       $('#f_quiz').checked,
-      logic_open:      $('#f_logic').checked,
-      contact_open:    $('#f_contact').checked,
-      onehundred_open: $('#f_100').checked,
-      auction_open:    $('#f_auction').checked
-    };
-    try{
-      $('#saveInfo').textContent = 'Сохраняем…';
-      const { state } = await setPatch(patch);
-      $('#saveInfo').textContent = 'Сохранено ✓';
-      // статус обновим, но форму НЕ перетираем
+      $("#btnSave").onclick = async () => {
+        const patch = {
+          phase: $("#phase").value,
+          quiz_open: $("#f_quiz").checked,
+          logic_open: $("#f_logic").checked,
+          contact_open: $("#f_contact").checked,
+          onehundred_open: $("#f_100").checked,
+          auction_open: $("#f_auction").checked,
+        };
+        try {
+          $("#saveInfo").textContent = "Сохраняем…";
+          const { state } = await setPatch(patch);
+          $("#saveInfo").textContent = "Сохранено ✓";
+          // статус обновим, но форму НЕ перетираем
+          refreshStatus();
+        } catch (e) {
+          $("#saveInfo").textContent = "Ошибка сохранения";
+          console.log(e);
+        }
+      };
+      async function resetScores() {
+        const slug = document.getElementById("slug").value || "pr-demo";
+        const token = document.getElementById("token").value || "";
+        if (!confirm("Точно обнулить баллы для " + slug + "?")) return;
+        const r = await fetch(
+          "/api/admin/reset_scores.js?event_slug=" + encodeURIComponent(slug),
+          {
+            method: "POST",
+            headers: { "x-admin-token": token },
+          }
+        );
+        const j = await r.json();
+        alert(j.ok ? "Сброшено: " + j.reset : "Ошибка");
+      }
+      // init
       refreshStatus();
-    }catch(e){
-      $('#saveInfo').textContent = 'Ошибка сохранения';
-      console.log(e);
-    }
-  };
-
-  // init
-  refreshStatus();
-  startAutoStatus();
-</script>
-</body>
+      startAutoStatus();
+    </script>
+  </body>
 </html>

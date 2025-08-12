@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Hall • Pernod Ricard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{ --bg:#0b1020; --card:#0f1629; --text:#e9eefc; --muted:#96a0b8; --accent:#4c8dff; }
+  *{box-sizing:border-box} body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#18223c 0%,#0b1020 50%,#090e1a 100%);color:var(--text);font:16px/1.5 ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
+  .wrap{max-width:900px;margin:40px auto;padding:0 16px}
+  h1{margin:0 0 8px;font-size:28px}
+  .muted{color:var(--muted)}
+  .board{margin-top:16px;background:var(--card);border:1px solid #1e2840;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.35);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:14px 16px;border-bottom:1px solid #1b2745}
+  th{font-weight:700;color:#a7b3cf;text-align:left}
+  tr.highlight{background:linear-gradient(90deg,#142244,#111a31)}
+  .rank{width:64px}
+  .score{text-align:right}
+  .pill{display:inline-block;background:#0b1323;border:1px solid #223154;color:#a7b3cf;border-radius:999px;padding:6px 10px;font-size:12px}
+  .header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .right{display:flex;gap:8px;align-items:center}
+  .green{color:#39d98a}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <h1>Лидерборд</h1>
+        <div class="muted">Событие: <span id="ev">pr-demo</span></div>
+      </div>
+      <div class="right">
+        <span class="pill" id="updated">—</span>
+      </div>
+    </div>
+
+    <div class="board">
+      <table>
+        <thead>
+          <tr><th class="rank">#</th><th>Имя</th><th class="score">Баллы</th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="muted" style="margin-top:8px">Обновляется каждые 2 сек</div>
+  </div>
+
+<script>
+  const EVENT_SLUG = new URLSearchParams(location.search).get('event') || 'pr-demo';
+  document.getElementById('ev').textContent = EVENT_SLUG;
+
+  async function load(){
+    const r = await fetch(`/api/leaderboard.js?event_slug=${encodeURIComponent(EVENT_SLUG)}&limit=20`);
+    if (!r.ok) return;
+    const { top } = await r.json();
+    const tb = document.getElementById('tbody');
+    tb.innerHTML = top.map((row, i) => `
+      <tr ${i===0?'class="highlight"':''}>
+        <td class="rank">${i+1}</td>
+        <td>${row.display_name || 'Без имени'}</td>
+        <td class="score">${row.score}</td>
+      </tr>
+    `).join('');
+    document.getElementById('updated').textContent = 'Обновлено: ' + new Date().toLocaleTimeString();
+  }
+  load();
+  setInterval(load, 2000);
+</script>
+</body>
+</html>
